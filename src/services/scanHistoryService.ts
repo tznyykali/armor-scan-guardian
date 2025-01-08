@@ -12,7 +12,12 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats,
+      stats: {
+        harmless: results.stats.harmless,
+        malicious: results.stats.malicious,
+        suspicious: results.stats.suspicious,
+        undetected: results.stats.undetected
+      },
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       file_type: results.metadata.file_info?.type,
@@ -23,7 +28,6 @@ export async function saveScanResult(
 
   if (historyError) throw historyError;
 
-  // Save detailed results for each detection
   if (results.detection_details.length > 0) {
     const { error: resultsError } = await supabase
       .from('scan_results')

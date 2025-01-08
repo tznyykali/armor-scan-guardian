@@ -2,16 +2,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { ScanResult } from '@/types/scan-types';
 
 export async function scanUrl(url: string): Promise<ScanResult> {
-  // Get all YARA rules
   const { data: yaraRules, error: rulesError } = await supabase
     .from('yara_rules')
     .select('*');
 
   if (rulesError) throw rulesError;
 
-  // Simulate scanning with YARA rules
   const detectionDetails = yaraRules
-    .filter(rule => Math.random() > 0.7) // Simulate rule matches
+    .filter(rule => Math.random() > 0.7)
     .map(rule => `${rule.name}: Detected (pattern match)`);
 
   const stats = {
@@ -28,9 +26,9 @@ export async function scanUrl(url: string): Promise<ScanResult> {
       engines_used: yaraRules.length,
       analysis_date: new Date().toISOString(),
       categories: {
-        malware: detectionDetails.filter(d => d.includes('malware')).length > 0,
-        encryption: detectionDetails.filter(d => d.includes('encryption')).length > 0,
-        obfuscation: detectionDetails.filter(d => d.includes('obfuscation')).length > 0,
+        malware: detectionDetails.filter(d => d.includes('malware')).length > 0 ? 'yes' : 'no',
+        encryption: detectionDetails.filter(d => d.includes('encryption')).length > 0 ? 'yes' : 'no',
+        obfuscation: detectionDetails.filter(d => d.includes('obfuscation')).length > 0 ? 'yes' : 'no',
       },
       threat_names: detectionDetails.map(d => d.split(':')[0]),
     },
@@ -39,24 +37,20 @@ export async function scanUrl(url: string): Promise<ScanResult> {
 }
 
 export async function scanFile(file: File): Promise<ScanResult> {
-  // Get all YARA rules
   const { data: yaraRules, error: rulesError } = await supabase
     .from('yara_rules')
     .select('*');
 
   if (rulesError) throw rulesError;
 
-  // Read file content
   const fileContent = await file.text();
 
-  // Simulate YARA rule matching based on file content and type
   const detectionDetails = yaraRules
     .filter(rule => {
-      // Simulate pattern matching based on file type and content
       if (file.type.includes('javascript') && rule.category === 'obfuscation') return true;
       if (file.type.includes('pdf') && rule.category === 'document') return true;
       if (fileContent.includes('suspicious') && rule.category === 'malware') return true;
-      return Math.random() > 0.8; // Random matches for demonstration
+      return Math.random() > 0.8;
     })
     .map(rule => `${rule.name}: Detected (pattern match)`);
 
@@ -74,9 +68,9 @@ export async function scanFile(file: File): Promise<ScanResult> {
       engines_used: yaraRules.length,
       analysis_date: new Date().toISOString(),
       categories: {
-        malware: detectionDetails.filter(d => d.includes('malware')).length > 0,
-        encryption: detectionDetails.filter(d => d.includes('encryption')).length > 0,
-        obfuscation: detectionDetails.filter(d => d.includes('obfuscation')).length > 0,
+        malware: detectionDetails.filter(d => d.includes('malware')).length > 0 ? 'yes' : 'no',
+        encryption: detectionDetails.filter(d => d.includes('encryption')).length > 0 ? 'yes' : 'no',
+        obfuscation: detectionDetails.filter(d => d.includes('obfuscation')).length > 0 ? 'yes' : 'no',
       },
       threat_names: detectionDetails.map(d => d.split(':')[0]),
       file_info: {
