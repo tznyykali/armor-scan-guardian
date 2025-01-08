@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { tensorflow } from "npm:@tensorflow/tfjs-node@4.17.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,12 +13,8 @@ serve(async (req) => {
   try {
     const { systemMetrics } = await req.json()
     console.log('Received system metrics:', systemMetrics)
-
-    // Initialize TensorFlow model
-    const model = await initializeModel()
     
-    // Process metrics and generate predictions
-    const optimizationResults = await processMetrics(model, systemMetrics)
+    const optimizationResults = processMetrics(systemMetrics)
     console.log('Generated optimization results:', optimizationResults)
 
     return new Response(
@@ -49,101 +44,75 @@ serve(async (req) => {
   }
 })
 
-async function initializeModel() {
-  const model = tensorflow.sequential();
-  
-  model.add(tensorflow.layers.dense({
-    inputShape: [4],
-    units: 8,
-    activation: 'relu',
-    kernelInitializer: 'glorotNormal'
-  }));
-  
-  model.add(tensorflow.layers.dense({
-    units: 8,
-    activation: 'relu',
-    kernelInitializer: 'glorotNormal'
-  }));
-  
-  model.add(tensorflow.layers.dense({
-    units: 4,
-    activation: 'sigmoid',
-    kernelInitializer: 'glorotNormal'
-  }));
+function processMetrics(metrics) {
+  // Calculate system health based on weighted metrics
+  const weights = {
+    cpuUsage: 0.3,
+    memoryUsage: 0.3,
+    batteryLevel: 0.2,
+    storage: 0.2
+  };
 
-  model.compile({
-    optimizer: 'adam',
-    loss: 'meanSquaredError',
-    metrics: ['accuracy']
-  });
+  const systemHealth = Math.round(
+    (100 - metrics.cpuUsage) * weights.cpuUsage +
+    (100 - metrics.memoryUsage) * weights.memoryUsage +
+    metrics.batteryLevel * weights.batteryLevel +
+    (100 - metrics.storage) * weights.storage
+  );
 
-  return model;
-}
+  // Detect potential threats based on threshold values
+  const threats = detectThreats(metrics);
 
-async function processMetrics(model, metrics) {
-  try {
-    const inputTensor = tensorflow.tensor2d([[
-      metrics.cpuUsage / 100,
-      metrics.memoryUsage / 100,
-      metrics.batteryLevel / 100,
-      metrics.storage / 100
-    ]]);
+  // Calculate performance improvement
+  const performanceImprovement = calculatePerformanceImprovement(metrics, systemHealth);
 
-    const predictions = model.predict(inputTensor);
-    const optimizedMetrics = await predictions.array();
-    
-    inputTensor.dispose();
-    predictions.dispose();
-    
-    return {
-      systemHealth: calculateSystemHealth(optimizedMetrics[0]),
-      malwareDetection: {
-        threatsFound: detectThreats(metrics),
-        cleaned: true
-      },
-      performance: {
-        beforeOptimization: metrics.performance || 70,
-        afterOptimization: Math.min(metrics.performance + (calculateSystemHealth(optimizedMetrics[0]) - 70), 100)
-      },
-      recommendations: generateRecommendations(metrics, optimizedMetrics[0])
-    };
-  } catch (error) {
-    console.error('Error processing metrics:', error);
-    throw error;
-  }
-}
-
-function calculateSystemHealth(optimizedMetrics) {
-  const weightedSum = optimizedMetrics.reduce((sum, metric) => sum + metric, 0);
-  return Math.min(Math.round((weightedSum / optimizedMetrics.length) * 100), 100);
+  return {
+    systemHealth,
+    malwareDetection: {
+      threatsFound: threats.length,
+      cleaned: true
+    },
+    performance: {
+      beforeOptimization: metrics.performance || 70,
+      afterOptimization: Math.min(metrics.performance + performanceImprovement, 100)
+    },
+    recommendations: generateRecommendations(metrics, threats)
+  };
 }
 
 function detectThreats(metrics) {
-  const threatIndicators = [
-    metrics.cpuUsage > 80,
-    metrics.memoryUsage > 90,
-    metrics.storage > 95
-  ];
+  const threats = [];
   
-  return threatIndicators.filter(Boolean).length;
+  if (metrics.cpuUsage > 80) threats.push('high_cpu_usage');
+  if (metrics.memoryUsage > 90) threats.push('high_memory_usage');
+  if (metrics.storage > 95) threats.push('storage_critical');
+  if (metrics.batteryLevel < 20) threats.push('low_battery');
+  
+  return threats;
 }
 
-function generateRecommendations(currentMetrics, optimizedMetrics) {
+function calculatePerformanceImprovement(metrics, systemHealth) {
+  // Calculate potential improvement based on current system health
+  const baseImprovement = (systemHealth - metrics.performance) * 0.5;
+  return Math.max(Math.min(baseImprovement, 30), 0); // Cap improvement between 0-30%
+}
+
+function generateRecommendations(metrics, threats) {
   const recommendations = [];
-  
-  if (currentMetrics.cpuUsage > optimizedMetrics[0] * 100) {
+
+  if (threats.includes('high_cpu_usage')) {
     recommendations.push("Optimize CPU usage by closing background applications");
   }
-  if (currentMetrics.memoryUsage > optimizedMetrics[1] * 100) {
+  if (threats.includes('high_memory_usage')) {
     recommendations.push("Free up memory by clearing unused applications");
   }
-  if (currentMetrics.batteryLevel < optimizedMetrics[2] * 100) {
+  if (threats.includes('low_battery')) {
     recommendations.push("Enable battery optimization mode");
   }
-  if (currentMetrics.storage > optimizedMetrics[3] * 100) {
+  if (threats.includes('storage_critical')) {
     recommendations.push("Clear cache and temporary files to optimize storage");
   }
-  
+
   if (recommendations.length === 0) {
     recommendations.push(
       "Maintain regular system updates",
@@ -151,6 +120,6 @@ function generateRecommendations(currentMetrics, optimizedMetrics) {
       "Keep Android OS updated to latest version"
     );
   }
-  
+
   return recommendations;
 }
