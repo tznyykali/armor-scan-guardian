@@ -1,30 +1,69 @@
 import React, { useState } from 'react';
-import { Smartphone, CheckCircle, Loader2 } from 'lucide-react';
+import { Smartphone, CheckCircle, Loader2, Shield, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
+
+interface OptimizationResults {
+  systemHealth: number;
+  malwareDetection: {
+    threatsFound: number;
+    cleaned: boolean;
+  };
+  performance: {
+    beforeOptimization: number;
+    afterOptimization: number;
+  };
+  recommendations: string[];
+}
 
 const OptimizeSection = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
+  const [results, setResults] = useState<OptimizationResults | null>(null);
   const { toast } = useToast();
 
-  const startOptimization = () => {
+  const startOptimization = async () => {
     setIsOptimizing(true);
     setOptimizationProgress(0);
 
-    const interval = setInterval(() => {
-      setOptimizationProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsOptimizing(false);
-          toast({
-            title: "Optimization Complete",
-            description: "Your Android device has been successfully optimized",
-          });
-          return 100;
-        }
-        return prev + 10;
+    try {
+      // Start progress animation
+      const interval = setInterval(() => {
+        setOptimizationProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
+      // Call the optimization function
+      const { data, error } = await supabase.functions.invoke('android-optimize');
+
+      clearInterval(interval);
+
+      if (error) {
+        throw error;
+      }
+
+      setResults(data.data);
+      setOptimizationProgress(100);
+      
+      toast({
+        title: "Optimization Complete",
+        description: "Your Android device has been successfully optimized",
       });
-    }, 500);
+    } catch (error) {
+      console.error('Optimization error:', error);
+      toast({
+        title: "Optimization Failed",
+        description: "An error occurred during optimization",
+        variant: "destructive",
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
   return (
@@ -37,7 +76,7 @@ const OptimizeSection = () => {
       <div className="space-y-6">
         <div className="bg-cyber-DEFAULT/30 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
-            <CheckCircle className="w-5 h-5 text-safe-DEFAULT" />
+            <Shield className="w-5 h-5 text-safe-DEFAULT" />
             <span className="font-medium">System Analysis</span>
           </div>
           <p className="text-sm text-foreground/60">
@@ -57,13 +96,53 @@ const OptimizeSection = () => {
 
         <div className="bg-cyber-DEFAULT/30 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
-            <CheckCircle className="w-5 h-5 text-safe-DEFAULT" />
+            <Zap className="w-5 h-5 text-safe-DEFAULT" />
             <span className="font-medium">Performance Optimization</span>
           </div>
           <p className="text-sm text-foreground/60">
             Advanced optimization techniques to enhance your device's performance.
           </p>
         </div>
+
+        {results && !isOptimizing && (
+          <div className="bg-cyber-DEFAULT/30 rounded-lg p-4 space-y-4">
+            <h3 className="font-medium text-lg">Optimization Results</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-foreground/60">System Health</p>
+                <p className="font-medium">{results.systemHealth.toFixed(1)}%</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-foreground/60">Threats Detected</p>
+                <p className="font-medium">{results.malwareDetection.threatsFound}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-foreground/60">Performance Before</p>
+                <p className="font-medium">{results.performance.beforeOptimization}%</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-foreground/60">Performance After</p>
+                <p className="font-medium">{results.performance.afterOptimization}%</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-2">Recommendations:</p>
+              <ul className="text-sm text-foreground/60 space-y-1">
+                {results.recommendations.map((rec, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <CheckCircle className="w-4 h-4 text-safe-DEFAULT" />
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {isOptimizing && (
           <div className="w-full bg-cyber-DEFAULT/30 rounded-full h-2 mb-4">
