@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ScanResult } from '@/types/scan-types';
-import { performYaraAnalysis } from './yaraService';
 
 export async function saveScanResult(
   scanType: 'url' | 'file',
@@ -13,10 +12,9 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats as any,
+      stats: results.stats,
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
-      permalink: results.permalink,
       file_type: results.metadata.file_info?.type,
       file_size: results.metadata.file_info?.size,
     })
@@ -25,25 +23,20 @@ export async function saveScanResult(
 
   if (historyError) throw historyError;
 
-  // Perform YARA analysis
-  await performYaraAnalysis(historyEntry.id, target, scanType);
-
   // Save detailed results for each detection
   if (results.detection_details.length > 0) {
     const { error: resultsError } = await supabase
       .from('scan_results')
       .insert(
         results.detection_details.map(detail => {
-          const [engine, result] = detail.split(': ');
-          const [detection, method] = result.split(' (');
+          const [ruleName, result] = detail.split(': ');
           return {
             scan_id: historyEntry.id,
-            rule_name: detection,
-            engine_name: engine,
+            rule_name: ruleName,
             category: 'malware',
             detection_details: [detail],
             result_details: {
-              method: method?.replace(')', '') || 'unknown',
+              method: result || 'pattern match',
             },
           };
         })
