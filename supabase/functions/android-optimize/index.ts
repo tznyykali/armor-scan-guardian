@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import { load } from "https://deno.land/x/deno_joblib@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,44 +18,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Download the model from storage
-    const { data: modelData, error: modelError } = await supabase
-      .storage
-      .from('ml_models')
-      .download('android_ids.joblib')
-
-    if (modelError) {
-      throw new Error('Failed to load ML model: ' + modelError.message)
-    }
-
-    // Convert the downloaded model to ArrayBuffer
-    const modelBuffer = await modelData.arrayBuffer()
-    
-    // Load the model
-    const model = await load(modelBuffer)
-    console.log('Model loaded successfully')
-
-    // Extract features from the request
-    // This should match your training data format
+    // Get the request body
     const { systemMetrics } = await req.json()
-    
-    // Make prediction using the model
-    const prediction = await model.predict([systemMetrics])
-    console.log('Prediction made:', prediction)
+    console.log('Received system metrics:', systemMetrics)
 
-    // Process the prediction results
-    const optimizationResults = {
-      systemHealth: calculateSystemHealth(systemMetrics),
-      malwareDetection: {
-        threatsFound: prediction[0] === 1 ? 1 : 0,
-        cleaned: prediction[0] === 0
-      },
-      performance: {
-        beforeOptimization: systemMetrics.performance || 70,
-        afterOptimization: Math.min((systemMetrics.performance || 70) + 15, 100)
-      },
-      recommendations: generateRecommendations(systemMetrics)
-    }
+    // Process the metrics and generate optimization results
+    // This is where we'll implement the actual model logic in the next iteration
+    const optimizationResults = processMetrics(systemMetrics)
+    console.log('Generated optimization results:', optimizationResults)
 
     return new Response(
       JSON.stringify({ 
@@ -85,14 +54,28 @@ serve(async (req) => {
   }
 })
 
-function calculateSystemHealth(metrics: any): number {
-  // Calculate system health based on various metrics
+function processMetrics(metrics: any) {
+  // Implement basic optimization logic
+  // This will be replaced with actual ML model predictions
   const baseHealth = 75
   const cpuImpact = (metrics.cpuUsage || 0) * -0.2
   const memoryImpact = (metrics.memoryUsage || 0) * -0.2
   const batteryImpact = (metrics.batteryLevel || 100) * 0.1
   
-  return Math.min(Math.max(baseHealth + cpuImpact + memoryImpact + batteryImpact, 0), 100)
+  const systemHealth = Math.min(Math.max(baseHealth + cpuImpact + memoryImpact + batteryImpact, 0), 100)
+  
+  return {
+    systemHealth,
+    malwareDetection: {
+      threatsFound: metrics.cpuUsage > 80 ? 1 : 0,
+      cleaned: true
+    },
+    performance: {
+      beforeOptimization: metrics.performance || 70,
+      afterOptimization: Math.min((metrics.performance || 70) + 15, 100)
+    },
+    recommendations: generateRecommendations(metrics)
+  }
 }
 
 function generateRecommendations(metrics: any): string[] {
