@@ -52,18 +52,30 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        safe: {
-          DEFAULT: "#00ff8c",
-          muted: "#00cc70",
+        caramel: {
+          DEFAULT: "#D4A373",
+          light: "#E6C9A8",
+          dark: "#A67C5B",
         },
-        warning: {
-          DEFAULT: "#ff3e3e",
-          muted: "#cc3232",
+        mist: {
+          DEFAULT: "#E5E5E5",
+          light: "#F5F5F5",
+          dark: "#CCCCCC",
         },
-        cyber: {
-          DEFAULT: "#0a192f",
-          accent: "#00ff8c",
-          muted: "#172a46",
+        forest: {
+          DEFAULT: "#2D6A4F",
+          light: "#40916C",
+          dark: "#1B4332",
+        },
+        smoke: {
+          DEFAULT: "#6B7280",
+          light: "#9CA3AF",
+          dark: "#4B5563",
+        },
+        midnight: {
+          DEFAULT: "#1F2937",
+          light: "#374151",
+          dark: "#111827",
         },
       },
       borderRadius: {
@@ -85,16 +97,11 @@ export default {
           "50%": { transform: "translateY(-10px) scale(1.05)" },
           "100%": { transform: "translateY(0) scale(1)" },
         },
-        pulse: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "network-flow": "network-flow 3s ease-in-out infinite",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },

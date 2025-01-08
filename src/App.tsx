@@ -7,23 +7,28 @@ import NavBar from "./components/NavBar";
 import Index from "./pages/Index";
 import Optimize from "./pages/Optimize";
 import Scan from "./pages/Scan";
+import Results from "./pages/Results";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/optimize" element={<Optimize />} />
-          <Route path="/scan" element={<Scan />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <NavBar />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/optimize" element={<Optimize />} />
+            <Route path="/scan" element={<Scan />} />
+            <Route path="/results" element={<Results />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
