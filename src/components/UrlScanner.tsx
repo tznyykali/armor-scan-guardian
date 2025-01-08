@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link as LinkIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { scanUrl } from '@/utils/virusTotalApi';
+import { scanUrl } from '@/services/virusTotalService';
+import { saveScanResult } from '@/services/scanHistoryService';
 import { useNavigate } from 'react-router-dom';
 
 const UrlScanner = () => {
@@ -24,17 +25,7 @@ const UrlScanner = () => {
     setIsScanning(true);
     try {
       const results = await scanUrl(urlInput);
-      
-      const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
-      scanHistory.unshift({
-        id: Date.now().toString(),
-        type: 'url',
-        target: urlInput,
-        timestamp: new Date().toISOString(),
-        results: results.data.attributes,
-      });
-      localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
-      
+      await saveScanResult('url', urlInput, results);
       navigate('/results');
     } catch (error) {
       toast({

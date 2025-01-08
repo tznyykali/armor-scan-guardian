@@ -11,67 +11,94 @@ export type Database = {
     Tables: {
       scan_history: {
         Row: {
+          analysis_date: string | null
           file_name: string
           file_size: number | null
           file_type: string | null
           id: string
+          permalink: string | null
           scan_status: string
           scan_timestamp: string | null
           scan_type: string
+          stats: Json | null
+          total_engines: number | null
           user_id: string | null
         }
         Insert: {
+          analysis_date?: string | null
           file_name: string
           file_size?: number | null
           file_type?: string | null
           id?: string
+          permalink?: string | null
           scan_status: string
           scan_timestamp?: string | null
           scan_type: string
+          stats?: Json | null
+          total_engines?: number | null
           user_id?: string | null
         }
         Update: {
+          analysis_date?: string | null
           file_name?: string
           file_size?: number | null
           file_type?: string | null
           id?: string
+          permalink?: string | null
           scan_status?: string
           scan_timestamp?: string | null
           scan_type?: string
+          stats?: Json | null
+          total_engines?: number | null
           user_id?: string | null
         }
         Relationships: []
       }
       scan_results: {
         Row: {
+          category: string | null
           created_at: string | null
           description: string | null
           detection_details: string[] | null
+          engine_name: string | null
+          engine_update: string | null
+          engine_version: string | null
           file_path: string | null
           id: string
           metadata: Json | null
+          result_details: Json | null
           rule_name: string
           scan_id: string | null
           severity: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
           detection_details?: string[] | null
+          engine_name?: string | null
+          engine_update?: string | null
+          engine_version?: string | null
           file_path?: string | null
           id?: string
           metadata?: Json | null
+          result_details?: Json | null
           rule_name: string
           scan_id?: string | null
           severity?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
           detection_details?: string[] | null
+          engine_name?: string | null
+          engine_update?: string | null
+          engine_version?: string | null
           file_path?: string | null
           id?: string
           metadata?: Json | null
+          result_details?: Json | null
           rule_name?: string
           scan_id?: string | null
           severity?: string | null

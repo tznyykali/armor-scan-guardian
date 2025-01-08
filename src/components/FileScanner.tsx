@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Upload, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { scanFile } from '@/utils/virusTotalApi';
+import { scanFile } from '@/services/virusTotalService';
+import { saveScanResult } from '@/services/scanHistoryService';
 import { useNavigate } from 'react-router-dom';
 
 const FileScanner = () => {
@@ -21,17 +22,7 @@ const FileScanner = () => {
     setIsScanning(true);
     try {
       const results = await scanFile(file);
-      
-      const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
-      scanHistory.unshift({
-        id: Date.now().toString(),
-        type: 'file',
-        target: file.name,
-        timestamp: new Date().toISOString(),
-        results: results.data.attributes,
-      });
-      localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
-      
+      await saveScanResult('file', file.name, results);
       navigate('/results');
     } catch (error) {
       toast({
@@ -69,10 +60,21 @@ const FileScanner = () => {
           htmlFor="file-upload"
           className="cursor-pointer flex flex-col items-center space-y-2"
         >
-          <Upload className="w-12 h-12 text-forest-DEFAULT dark:text-caramel-DEFAULT" />
-          <span className="text-sm text-smoke-DEFAULT dark:text-mist-DEFAULT">
-            Drag & drop files here or click to upload
-          </span>
+          {isScanning ? (
+            <div className="flex flex-col items-center">
+              <Loader2 className="w-12 h-12 text-forest-DEFAULT dark:text-caramel-DEFAULT animate-spin" />
+              <span className="text-sm text-smoke-DEFAULT dark:text-mist-DEFAULT mt-2">
+                Scanning file...
+              </span>
+            </div>
+          ) : (
+            <>
+              <Upload className="w-12 h-12 text-forest-DEFAULT dark:text-caramel-DEFAULT" />
+              <span className="text-sm text-smoke-DEFAULT dark:text-mist-DEFAULT">
+                Drag & drop files here or click to upload
+              </span>
+            </>
+          )}
         </label>
       </div>
     </div>
