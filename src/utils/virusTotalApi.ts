@@ -1,5 +1,3 @@
-// ... keep existing code (API key check and error handling)
-
 export const scanUrl = async (url: string) => {
   const apiKey = localStorage.getItem('VIRUSTOTAL_API_KEY');
   if (!apiKey) {
