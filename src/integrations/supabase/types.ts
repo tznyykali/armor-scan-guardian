@@ -46,7 +46,10 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          detection_details: string[] | null
+          file_path: string | null
           id: string
+          metadata: Json | null
           rule_name: string
           scan_id: string | null
           severity: string | null
@@ -54,7 +57,10 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          detection_details?: string[] | null
+          file_path?: string | null
           id?: string
+          metadata?: Json | null
           rule_name: string
           scan_id?: string | null
           severity?: string | null
@@ -62,7 +68,10 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          detection_details?: string[] | null
+          file_path?: string | null
           id?: string
+          metadata?: Json | null
           rule_name?: string
           scan_id?: string | null
           severity?: string | null

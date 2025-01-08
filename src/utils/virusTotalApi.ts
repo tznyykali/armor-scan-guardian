@@ -1,3 +1,5 @@
+// ... keep existing code (API key check and error handling)
+
 export const scanUrl = async (url: string) => {
   const apiKey = localStorage.getItem('VIRUSTOTAL_API_KEY');
   if (!apiKey) {
@@ -40,7 +42,24 @@ export const scanUrl = async (url: string) => {
       const analysisData = await analysisResponse.json();
       
       if (analysisData.data.attributes.status === 'completed') {
-        return analysisData;
+        // Extract detailed metadata and detection information
+        const results = {
+          ...analysisData.data.attributes,
+          metadata: {
+            engines_used: Object.keys(analysisData.data.attributes.results).length,
+            analysis_date: new Date(analysisData.data.attributes.date * 1000).toISOString(),
+            categories: analysisData.data.attributes.categories || {},
+            threat_names: Object.values(analysisData.data.attributes.results)
+              .map((result: any) => result.result)
+              .filter(Boolean),
+          },
+          detection_details: Object.entries(analysisData.data.attributes.results)
+            .filter(([_, result]: [string, any]) => result.result)
+            .map(([engine, result]: [string, any]) => 
+              `${engine}: ${result.result} (${result.method || 'unknown method'})`
+            ),
+        };
+        return { data: { attributes: results } };
       }
 
       // If not completed, wait and try again
@@ -112,7 +131,30 @@ export const scanFile = async (file: File) => {
       const analysisData = await analysisResponse.json();
       
       if (analysisData.data.attributes.status === 'completed') {
-        return analysisData;
+        // Extract detailed metadata and detection information
+        const results = {
+          ...analysisData.data.attributes,
+          metadata: {
+            file_info: {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+            },
+            engines_used: Object.keys(analysisData.data.attributes.results).length,
+            analysis_date: new Date(analysisData.data.attributes.date * 1000).toISOString(),
+            categories: analysisData.data.attributes.categories || {},
+            threat_names: Object.values(analysisData.data.attributes.results)
+              .map((result: any) => result.result)
+              .filter(Boolean),
+          },
+          file_path: URL.createObjectURL(file),
+          detection_details: Object.entries(analysisData.data.attributes.results)
+            .filter(([_, result]: [string, any]) => result.result)
+            .map(([engine, result]: [string, any]) => 
+              `${engine}: ${result.result} (${result.method || 'unknown method'})`
+            ),
+        };
+        return { data: { attributes: results } };
       }
 
       // If not completed, wait and try again
