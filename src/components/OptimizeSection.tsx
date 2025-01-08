@@ -31,8 +31,7 @@ const OptimizeSection = () => {
   const { toast } = useToast();
 
   const getSystemMetrics = (): SystemMetrics => {
-    // In a real app, this would come from actual device metrics
-    // For now, we'll simulate some realistic values
+    // Simulate realistic system metrics
     return {
       cpuUsage: Math.floor(Math.random() * 40) + 30, // 30-70%
       memoryUsage: Math.floor(Math.random() * 30) + 50, // 50-80%
@@ -47,7 +46,6 @@ const OptimizeSection = () => {
     setOptimizationProgress(0);
 
     try {
-      // Start progress animation
       const interval = setInterval(() => {
         setOptimizationProgress((prev) => {
           if (prev >= 90) {
@@ -58,10 +56,9 @@ const OptimizeSection = () => {
         });
       }, 500);
 
-      // Get current system metrics
       const systemMetrics = getSystemMetrics();
+      console.log('Sending system metrics:', systemMetrics);
 
-      // Call the optimization function with system metrics
       const { data, error } = await supabase.functions.invoke('android-optimize', {
         body: { systemMetrics }
       });
@@ -72,6 +69,7 @@ const OptimizeSection = () => {
         throw error;
       }
 
+      console.log('Received optimization results:', data);
       setResults(data.data);
       setOptimizationProgress(100);
       

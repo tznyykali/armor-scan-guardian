@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,13 +18,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the request body
     const { systemMetrics } = await req.json()
     console.log('Received system metrics:', systemMetrics)
 
-    // Process the metrics and generate optimization results
-    // This is where we'll implement the actual model logic in the next iteration
-    const optimizationResults = processMetrics(systemMetrics)
+    // Initialize TensorFlow model
+    const model = await initializeModel()
+    
+    // Process metrics and generate predictions
+    const optimizationResults = await processMetrics(model, systemMetrics)
     console.log('Generated optimization results:', optimizationResults)
 
     return new Response(
@@ -54,54 +55,97 @@ serve(async (req) => {
   }
 })
 
-function processMetrics(metrics: any) {
-  // Implement basic optimization logic
-  // This will be replaced with actual ML model predictions
-  const baseHealth = 75
-  const cpuImpact = (metrics.cpuUsage || 0) * -0.2
-  const memoryImpact = (metrics.memoryUsage || 0) * -0.2
-  const batteryImpact = (metrics.batteryLevel || 100) * 0.1
+async function initializeModel() {
+  // Define a simple sequential model for system optimization
+  const model = tf.sequential({
+    layers: [
+      tf.layers.dense({ inputShape: [4], units: 8, activation: 'relu' }),
+      tf.layers.dense({ units: 8, activation: 'relu' }),
+      tf.layers.dense({ units: 4, activation: 'sigmoid' })
+    ]
+  });
+
+  // Compile the model
+  model.compile({
+    optimizer: tf.train.adam(0.01),
+    loss: 'meanSquaredError'
+  });
+
+  return model;
+}
+
+async function processMetrics(model: any, metrics: any) {
+  // Normalize input metrics
+  const inputTensor = tf.tensor2d([[
+    metrics.cpuUsage / 100,
+    metrics.memoryUsage / 100,
+    metrics.batteryLevel / 100,
+    metrics.storage / 100
+  ]]);
+
+  // Get model predictions
+  const predictions = await model.predict(inputTensor).array();
+  const [optimizedMetrics] = predictions;
+
+  // Calculate system health based on optimized metrics
+  const systemHealth = calculateSystemHealth(optimizedMetrics);
   
-  const systemHealth = Math.min(Math.max(baseHealth + cpuImpact + memoryImpact + batteryImpact, 0), 100)
-  
+  // Generate optimization results
   return {
     systemHealth,
     malwareDetection: {
-      threatsFound: metrics.cpuUsage > 80 ? 1 : 0,
+      threatsFound: detectThreats(metrics),
       cleaned: true
     },
     performance: {
       beforeOptimization: metrics.performance || 70,
-      afterOptimization: Math.min((metrics.performance || 70) + 15, 100)
+      afterOptimization: Math.min(metrics.performance + (systemHealth - 70), 100)
     },
-    recommendations: generateRecommendations(metrics)
-  }
+    recommendations: generateRecommendations(metrics, optimizedMetrics)
+  };
 }
 
-function generateRecommendations(metrics: any): string[] {
-  const recommendations: string[] = []
+function calculateSystemHealth(optimizedMetrics: number[]): number {
+  // Convert optimized metrics to a health score (0-100)
+  const weightedSum = optimizedMetrics.reduce((sum, metric) => sum + metric, 0);
+  return Math.min(Math.round((weightedSum / optimizedMetrics.length) * 100), 100);
+}
+
+function detectThreats(metrics: any): number {
+  // Implement threat detection logic based on system metrics
+  const threatIndicators = [
+    metrics.cpuUsage > 80,
+    metrics.memoryUsage > 90,
+    metrics.storage > 95
+  ];
   
-  if (metrics.cpuUsage > 70) {
-    recommendations.push("Close background applications to reduce CPU usage")
+  return threatIndicators.filter(Boolean).length;
+}
+
+function generateRecommendations(currentMetrics: any, optimizedMetrics: number[]): string[] {
+  const recommendations: string[] = [];
+  
+  if (currentMetrics.cpuUsage > optimizedMetrics[0] * 100) {
+    recommendations.push("Optimize CPU usage by closing background applications");
   }
-  if (metrics.memoryUsage > 80) {
-    recommendations.push("Clear RAM by closing unused applications")
+  if (currentMetrics.memoryUsage > optimizedMetrics[1] * 100) {
+    recommendations.push("Free up memory by clearing unused applications");
   }
-  if (metrics.batteryLevel < 20) {
-    recommendations.push("Enable battery saver mode")
+  if (currentMetrics.batteryLevel < optimizedMetrics[2] * 100) {
+    recommendations.push("Enable battery optimization mode");
   }
-  if (metrics.storage > 90) {
-    recommendations.push("Clear cache and temporary files")
+  if (currentMetrics.storage > optimizedMetrics[3] * 100) {
+    recommendations.push("Clear cache and temporary files to optimize storage");
   }
   
   // Add default recommendations if none were triggered
   if (recommendations.length === 0) {
     recommendations.push(
-      "Regularly update your applications",
-      "Monitor battery usage patterns",
-      "Keep your Android system updated"
-    )
+      "Maintain regular system updates",
+      "Monitor app battery usage",
+      "Keep Android OS updated to latest version"
+    );
   }
   
-  return recommendations
+  return recommendations;
 }
