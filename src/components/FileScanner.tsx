@@ -21,10 +21,30 @@ const FileScanner = () => {
   const handleFileScan = async (file: File) => {
     setIsScanning(true);
     try {
+      console.log('Starting file scan...');
       const results = await scanFile(file);
-      await saveScanResult('file', file.name, results);
+      console.log('Scan results:', results);
+      
+      if (!results) {
+        throw new Error('No scan results received');
+      }
+
+      console.log('Saving scan results...');
+      const savedResult = await saveScanResult('file', file.name, results);
+      console.log('Saved scan result:', savedResult);
+
+      if (!savedResult) {
+        throw new Error('Failed to save scan results');
+      }
+
+      toast({
+        title: "Scan Complete",
+        description: "File has been successfully scanned",
+      });
+
       navigate('/results');
     } catch (error) {
+      console.error('Scan error:', error);
       toast({
         title: "Scan Error",
         description: error instanceof Error ? error.message : "Failed to scan file",

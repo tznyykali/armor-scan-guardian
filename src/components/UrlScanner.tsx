@@ -24,10 +24,30 @@ const UrlScanner = () => {
 
     setIsScanning(true);
     try {
+      console.log('Starting URL scan...');
       const results = await scanUrl(urlInput);
-      await saveScanResult('url', urlInput, results);
+      console.log('Scan results:', results);
+
+      if (!results) {
+        throw new Error('No scan results received');
+      }
+
+      console.log('Saving scan results...');
+      const savedResult = await saveScanResult('url', urlInput, results);
+      console.log('Saved scan result:', savedResult);
+
+      if (!savedResult) {
+        throw new Error('Failed to save scan results');
+      }
+
+      toast({
+        title: "Scan Complete",
+        description: "URL has been successfully scanned",
+      });
+
       navigate('/results');
     } catch (error) {
+      console.error('Scan error:', error);
       toast({
         title: "Scan Error",
         description: error instanceof Error ? error.message : "Failed to scan URL",
