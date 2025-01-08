@@ -12,7 +12,7 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats,
+      stats: results.stats as any, // Type assertion to handle the Json type requirement
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       permalink: results.permalink,
