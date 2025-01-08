@@ -16,11 +16,31 @@ interface OptimizationResults {
   recommendations: string[];
 }
 
+interface SystemMetrics {
+  cpuUsage: number;
+  memoryUsage: number;
+  batteryLevel: number;
+  storage: number;
+  performance: number;
+}
+
 const OptimizeSection = () => {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [results, setResults] = useState<OptimizationResults | null>(null);
   const { toast } = useToast();
+
+  const getSystemMetrics = (): SystemMetrics => {
+    // In a real app, this would come from actual device metrics
+    // For now, we'll simulate some realistic values
+    return {
+      cpuUsage: Math.floor(Math.random() * 40) + 30, // 30-70%
+      memoryUsage: Math.floor(Math.random() * 30) + 50, // 50-80%
+      batteryLevel: Math.floor(Math.random() * 60) + 40, // 40-100%
+      storage: Math.floor(Math.random() * 30) + 60, // 60-90%
+      performance: Math.floor(Math.random() * 20) + 60 // 60-80%
+    };
+  };
 
   const startOptimization = async () => {
     setIsOptimizing(true);
@@ -38,8 +58,13 @@ const OptimizeSection = () => {
         });
       }, 500);
 
-      // Call the optimization function
-      const { data, error } = await supabase.functions.invoke('android-optimize');
+      // Get current system metrics
+      const systemMetrics = getSystemMetrics();
+
+      // Call the optimization function with system metrics
+      const { data, error } = await supabase.functions.invoke('android-optimize', {
+        body: { systemMetrics }
+      });
 
       clearInterval(interval);
 
