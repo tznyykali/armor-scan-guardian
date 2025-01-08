@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
-import * as tf from 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js'
+import { tensorflow } from "npm:@tensorflow/tfjs-node@4.17.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,30 +50,27 @@ serve(async (req) => {
 })
 
 async function initializeModel() {
-  // Create a sequential model
-  const model = tf.sequential();
+  const model = tensorflow.sequential();
   
-  // Add layers explicitly using tf.layers
-  model.add(tf.layers.dense({
+  model.add(tensorflow.layers.dense({
     inputShape: [4],
     units: 8,
     activation: 'relu',
     kernelInitializer: 'glorotNormal'
   }));
   
-  model.add(tf.layers.dense({
+  model.add(tensorflow.layers.dense({
     units: 8,
     activation: 'relu',
     kernelInitializer: 'glorotNormal'
   }));
   
-  model.add(tf.layers.dense({
+  model.add(tensorflow.layers.dense({
     units: 4,
     activation: 'sigmoid',
     kernelInitializer: 'glorotNormal'
   }));
 
-  // Compile the model with specific optimizer and loss function
   model.compile({
     optimizer: 'adam',
     loss: 'meanSquaredError',
@@ -86,35 +82,28 @@ async function initializeModel() {
 
 async function processMetrics(model, metrics) {
   try {
-    // Normalize input metrics
-    const inputTensor = tf.tensor2d([[
+    const inputTensor = tensorflow.tensor2d([[
       metrics.cpuUsage / 100,
       metrics.memoryUsage / 100,
       metrics.batteryLevel / 100,
       metrics.storage / 100
     ]]);
 
-    // Get model predictions
     const predictions = model.predict(inputTensor);
     const optimizedMetrics = await predictions.array();
     
-    // Calculate system health based on optimized metrics
-    const systemHealth = calculateSystemHealth(optimizedMetrics[0]);
-    
-    // Clean up tensors
     inputTensor.dispose();
     predictions.dispose();
     
-    // Generate optimization results
     return {
-      systemHealth,
+      systemHealth: calculateSystemHealth(optimizedMetrics[0]),
       malwareDetection: {
         threatsFound: detectThreats(metrics),
         cleaned: true
       },
       performance: {
         beforeOptimization: metrics.performance || 70,
-        afterOptimization: Math.min(metrics.performance + (systemHealth - 70), 100)
+        afterOptimization: Math.min(metrics.performance + (calculateSystemHealth(optimizedMetrics[0]) - 70), 100)
       },
       recommendations: generateRecommendations(metrics, optimizedMetrics[0])
     };
@@ -155,7 +144,6 @@ function generateRecommendations(currentMetrics, optimizedMetrics) {
     recommendations.push("Clear cache and temporary files to optimize storage");
   }
   
-  // Add default recommendations if none were triggered
   if (recommendations.length === 0) {
     recommendations.push(
       "Maintain regular system updates",
