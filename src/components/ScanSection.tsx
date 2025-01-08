@@ -22,10 +22,9 @@ const ScanSection = () => {
     }
 
     setIsScanning(true);
-    const results = await scanUrl(urlInput);
-    setIsScanning(false);
-
-    if (results) {
+    try {
+      const results = await scanUrl(urlInput);
+      
       // Store results in localStorage for the results page
       const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
       scanHistory.unshift({
@@ -38,6 +37,14 @@ const ScanSection = () => {
       localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
       
       navigate('/results');
+    } catch (error) {
+      toast({
+        title: "Scan Error",
+        description: error instanceof Error ? error.message : "Failed to scan URL",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -51,10 +58,9 @@ const ScanSection = () => {
 
   const handleFileScan = async (file: File) => {
     setIsScanning(true);
-    const results = await scanFile(file);
-    setIsScanning(false);
-
-    if (results) {
+    try {
+      const results = await scanFile(file);
+      
       // Store results in localStorage for the results page
       const scanHistory = JSON.parse(localStorage.getItem('scanHistory') || '[]');
       scanHistory.unshift({
@@ -67,6 +73,14 @@ const ScanSection = () => {
       localStorage.setItem('scanHistory', JSON.stringify(scanHistory));
       
       navigate('/results');
+    } catch (error) {
+      toast({
+        title: "Scan Error",
+        description: error instanceof Error ? error.message : "Failed to scan file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
     }
   };
 
