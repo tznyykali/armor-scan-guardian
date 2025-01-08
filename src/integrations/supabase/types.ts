@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      advanced_scan_results: {
+        Row: {
+          category: Database["public"]["Enums"]["detection_category"]
+          created_at: string | null
+          detection_details: Json
+          id: string
+          rule_match: string
+          scan_id: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["detection_category"]
+          created_at?: string | null
+          detection_details?: Json
+          id?: string
+          rule_match: string
+          scan_id?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["detection_category"]
+          created_at?: string | null
+          detection_details?: Json
+          id?: string
+          rule_match?: string
+          scan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advanced_scan_results_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "scan_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scan_history: {
         Row: {
           analysis_date: string | null
@@ -113,6 +148,36 @@ export type Database = {
           },
         ]
       }
+      yara_rules: {
+        Row: {
+          category: Database["public"]["Enums"]["detection_category"]
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          rule_content: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["detection_category"]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rule_content: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["detection_category"]
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rule_content?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -121,7 +186,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      detection_category:
+        | "malware"
+        | "encryption"
+        | "obfuscation"
+        | "document"
+        | "cryptographic"
     }
     CompositeTypes: {
       [_ in never]: never

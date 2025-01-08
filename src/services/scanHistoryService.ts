@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ScanResult } from '@/types/scan-types';
+import { performYaraAnalysis } from './yaraService';
 
 export async function saveScanResult(
   scanType: 'url' | 'file',
@@ -12,7 +13,7 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats as any, // Type assertion to handle the Json type requirement
+      stats: results.stats as any,
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       permalink: results.permalink,
@@ -23,6 +24,9 @@ export async function saveScanResult(
     .single();
 
   if (historyError) throw historyError;
+
+  // Perform YARA analysis
+  await performYaraAnalysis(historyEntry.id, target, scanType);
 
   // Save detailed results for each detection
   if (results.detection_details.length > 0) {

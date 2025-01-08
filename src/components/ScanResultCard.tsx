@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info, Shield } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -31,8 +31,22 @@ interface ScanResultCardProps {
 
 const ScanResultCard = ({ result }: ScanResultCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [yaraResults, setYaraResults] = useState<any[]>([]);
 
-  const toggleExpand = () => setIsExpanded(!isExpanded);
+  const toggleExpand = async () => {
+    setIsExpanded(!isExpanded);
+    if (!isExpanded && yaraResults.length === 0) {
+      try {
+        const { data } = await supabase
+          .from('advanced_scan_results')
+          .select('*')
+          .eq('scan_id', result.id);
+        if (data) setYaraResults(data);
+      } catch (error) {
+        console.error('Error fetching YARA results:', error);
+      }
+    }
+  };
 
   return (
     <Card className="w-full mb-4 bg-mist-light/50 dark:bg-midnight-DEFAULT/50 backdrop-blur-lg">
@@ -90,6 +104,40 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
               </div>
             )}
             
+            {yaraResults.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  YARA Analysis Results
+                </h4>
+                <div className="space-y-3">
+                  {yaraResults.map((yara, index) => (
+                    <div
+                      key={index}
+                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-semibold text-sm">{yara.rule_match}</h5>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Category: {yara.category}
+                          </p>
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded-full bg-forest-DEFAULT/10 text-forest-DEFAULT">
+                          {yara.detection_details.severity || 'medium'}
+                        </span>
+                      </div>
+                      {yara.detection_details.description && (
+                        <p className="text-sm mt-2 text-muted-foreground">
+                          {yara.detection_details.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {result.results.metadata && (
               <div className="mt-4">
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
