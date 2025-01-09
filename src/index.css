@@ -75,13 +75,7 @@
 
   .typing-text {
     @apply overflow-hidden whitespace-nowrap border-r-2 border-rust dark:border-rust-light;
-    width: 0;
-    animation: 
-      typing 3.5s steps(40, end),
-      blink 0.75s step-end infinite,
-      hideText 0s 7s forwards,
-      typing 3.5s steps(40, end) 15s infinite,
-      blink 0.75s step-end 15s infinite;
+    animation: typing 3.5s steps(40, end), blink 0.75s step-end infinite;
   }
 }
 
@@ -93,10 +87,4 @@
 @keyframes blink {
   from, to { border-color: transparent }
   50% { border-color: #E07B39 }
-}
-
-@keyframes hideText {
-  to { 
-    width: 0;
-  }
 }
