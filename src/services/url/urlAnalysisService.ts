@@ -65,7 +65,7 @@ function generateDetectionDetails(
       engine_name: 'RiskAnalyzer',
       category: 'risk',
       result: 'High risk URL characteristics detected',
-      method: 'antivirus',
+      method: 'hids',
       engine_version: '1.0',
       engine_update: new Date().toISOString()
     });
@@ -76,7 +76,7 @@ function generateDetectionDetails(
       engine_name: 'AlertMonitor',
       category: 'alert',
       result: 'Multiple security alerts triggered',
-      method: 'antivirus',
+      method: 'snort',
       engine_version: '1.0',
       engine_update: new Date().toISOString()
     });
@@ -87,7 +87,7 @@ function generateDetectionDetails(
       engine_name: 'SystemAnalyzer',
       category: 'system',
       result: 'Suspicious network behavior detected',
-      method: 'antivirus',
+      method: 'hids',
       engine_version: '1.0',
       engine_update: new Date().toISOString()
     });
@@ -101,7 +101,7 @@ function generateDetectionDetails(
         engine_name: rule.name,
         category: rule.category,
         result: 'Detected (pattern match)',
-        method: 'antivirus',
+        method: 'yaralyze',
         engine_version: '1.0',
         engine_update: new Date().toISOString()
       });

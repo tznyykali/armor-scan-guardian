@@ -1,12 +1,12 @@
 import { Json } from '@/integrations/supabase/types';
 
-export type DetectionEngineType = 'snort' | 'yaralyze' | 'hids' | 'droidbox' | 'androguard' | 'antivirus';
+export type DetectionEngineType = 'snort' | 'yaralyze' | 'hids' | 'droidbox' | 'androguard';
 
 export interface DetectionDetail {
   engine_name: string;
   category: string;
   result: string;
-  method: string;
+  method: DetectionEngineType;
   engine_version: string;
   engine_update: string;
 }

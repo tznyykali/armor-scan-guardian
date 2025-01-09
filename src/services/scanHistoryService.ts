@@ -26,11 +26,10 @@ export async function saveScanResult(
 
   if (historyError) throw historyError;
 
-  // Save detailed scan results
   if (results.detection_details && results.detection_details.length > 0) {
     const scanResults = results.detection_details.map(detail => ({
       scan_id: historyEntry.id,
-      rule_name: detail.engine_name, // Use engine name as rule name
+      rule_name: detail.engine_name,
       category: detail.category,
       detection_details: [detail.result],
       result_details: { 
@@ -38,11 +37,11 @@ export async function saveScanResult(
         engine_version: detail.engine_version,
         engine_update: detail.engine_update
       } as Json,
-      engine_type: detail.method as DetectionEngineType, // Convert method to engine type
+      engine_type: detail.method,
       engine_name: detail.engine_name,
       engine_version: detail.engine_version,
       engine_update: detail.engine_update,
-      description: `Detection by ${detail.engine_name}` // Add description field
+      description: `Detection by ${detail.engine_name}`
     }));
 
     const { error: resultsError } = await supabase
@@ -52,7 +51,6 @@ export async function saveScanResult(
     if (resultsError) throw resultsError;
   }
 
-  // Save ML scan results if available
   if (results.metadata.ml_analysis) {
     const mlResult = {
       scan_id: historyEntry.id,
