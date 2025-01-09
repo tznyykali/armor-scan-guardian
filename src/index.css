@@ -54,7 +54,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-beige dark:bg-taupe-dark text-foreground font-mono transition-colors duration-300;
+    @apply bg-background text-foreground font-mono transition-colors duration-300;
   }
 }
 
@@ -62,15 +62,6 @@
   .network-grid {
     @apply transition-colors duration-300;
     background-size: 50px 50px;
-    background-image: 
-      linear-gradient(to right, rgba(182, 162, 142, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(182, 162, 142, 0.1) 1px, transparent 1px);
-  }
-
-  .dark .network-grid {
-    background-image: 
-      linear-gradient(to right, rgba(224, 123, 57, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(224, 123, 57, 0.1) 1px, transparent 1px);
   }
 
   .typing-text {
