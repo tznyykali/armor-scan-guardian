@@ -51,7 +51,7 @@ const NetworkBackground = () => {
         // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(182, 162, 142, 0.6)'; // Subtle taupe color for nodes
+        ctx.fillStyle = 'rgba(182, 162, 142, 0.8)'; // Increased opacity for particles
         ctx.fill();
 
         // Connect particles
@@ -64,7 +64,7 @@ const NetworkBackground = () => {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(182, 162, 142, ${0.2 * (1 - distance / connectionDistance)})`; // Subtle taupe color for connections
+            ctx.strokeStyle = `rgba(182, 162, 142, ${0.4 * (1 - distance / connectionDistance)})`; // Increased opacity for connections
             ctx.stroke();
           }
         }
@@ -84,7 +84,7 @@ const NetworkBackground = () => {
     <div className="fixed inset-0 -z-10">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-70" // Increased opacity from 30 to 70
       />
     </div>
   );
