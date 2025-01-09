@@ -55,7 +55,7 @@ const NetworkBackground = () => {
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2);
         ctx.fillStyle = theme === 'dark' 
           ? 'rgba(220, 228, 201, 0.6)' // sage light color for dark mode
-          : 'rgba(182, 162, 142, 0.6)'; // taupe color for light mode
+          : 'rgba(224, 123, 57, 0.6)'; // rust color for light mode
         ctx.fill();
 
         // Connect particles
@@ -70,7 +70,7 @@ const NetworkBackground = () => {
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.strokeStyle = theme === 'dark'
               ? `rgba(220, 228, 201, ${0.3 * (1 - distance / connectionDistance)})` // sage light color for dark mode
-              : `rgba(182, 162, 142, ${0.3 * (1 - distance / connectionDistance)})`; // taupe color for light mode
+              : `rgba(224, 123, 57, ${0.3 * (1 - distance / connectionDistance)})`; // rust color for light mode
             ctx.stroke();
           }
         }
