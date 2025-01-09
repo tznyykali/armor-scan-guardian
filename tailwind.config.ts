@@ -19,6 +19,28 @@ export default {
     },
     extend: {
       colors: {
+        // Custom theme colors
+        sage: {
+          DEFAULT: "#DCE4C9",
+          light: "#E8EDD9",
+          dark: "#C5D1AE",
+        },
+        beige: {
+          DEFAULT: "#F5F5DC",
+          light: "#FAFAE9",
+          dark: "#E8E8C4",
+        },
+        taupe: {
+          DEFAULT: "#B6A28E",
+          light: "#C8B8A8",
+          dark: "#9A8572",
+        },
+        rust: {
+          DEFAULT: "#E07B39",
+          light: "#E69661",
+          dark: "#B85F24",
+        },
+        // Keep existing color definitions
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -52,31 +74,9 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        caramel: {
-          DEFAULT: "#D4A373",
-          light: "#E6C9A8",
-          dark: "#A67C5B",
-        },
-        mist: {
-          DEFAULT: "#E5E5E5",
-          light: "#F5F5F5",
-          dark: "#CCCCCC",
-        },
-        forest: {
-          DEFAULT: "#2D6A4F",
-          light: "#40916C",
-          dark: "#1B4332",
-        },
-        smoke: {
-          DEFAULT: "#6B7280",
-          light: "#9CA3AF",
-          dark: "#4B5563",
-        },
-        midnight: {
-          DEFAULT: "#1F2937",
-          light: "#374151",
-          dark: "#111827",
-        },
+      },
+      fontFamily: {
+        mono: ["Share Tech Mono", "monospace"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -92,16 +92,19 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "network-flow": {
-          "0%": { transform: "translateY(0) scale(1)" },
-          "50%": { transform: "translateY(-10px) scale(1.05)" },
-          "100%": { transform: "translateY(0) scale(1)" },
+        typing: {
+          "0%": { width: "0" },
+          "100%": { width: "100%" },
+        },
+        blink: {
+          "50%": { borderColor: "transparent" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "network-flow": "network-flow 3s ease-in-out infinite",
+        typing: "typing 3.5s steps(40, end)",
+        "cursor-blink": "blink 1s step-end infinite",
       },
     },
   },

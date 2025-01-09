@@ -21,18 +21,12 @@ const FileScanner = () => {
   const handleFileScan = async (file: File) => {
     setIsScanning(true);
     try {
-      console.log('Starting file scan...');
       const results = await scanFile(file);
-      console.log('Scan results:', results);
-      
       if (!results) {
         throw new Error('No scan results received');
       }
 
-      console.log('Saving scan results...');
       const savedResult = await saveScanResult('file', file.name, results);
-      console.log('Saved scan result:', savedResult);
-
       if (!savedResult) {
         throw new Error('Failed to save scan results');
       }
@@ -59,13 +53,13 @@ const FileScanner = () => {
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleFileDrop}
-      className="bg-mist-light/50 dark:bg-midnight-DEFAULT/50 backdrop-blur-lg rounded-lg p-6 border border-forest-DEFAULT/20"
+      className="bg-sage/50 dark:bg-taupe/50 backdrop-blur-lg rounded-lg p-6 border border-sage-dark/20"
     >
       <div className="flex items-center space-x-2 mb-4">
-        <Upload className="w-5 h-5 text-forest-DEFAULT dark:text-caramel-DEFAULT" />
-        <h3 className="text-lg font-semibold text-forest-DEFAULT dark:text-caramel-DEFAULT">File Scanner</h3>
+        <Upload className="w-5 h-5 text-rust dark:text-rust-light" />
+        <h3 className="text-lg font-mono text-rust dark:text-rust-light">File Scanner_</h3>
       </div>
-      <div className="border-2 border-dashed border-forest-DEFAULT/20 rounded-lg p-8 text-center">
+      <div className="border-2 border-dashed border-sage-dark/20 rounded-lg p-8 text-center">
         <input
           type="file"
           id="file-upload"
@@ -82,16 +76,16 @@ const FileScanner = () => {
         >
           {isScanning ? (
             <div className="flex flex-col items-center">
-              <Loader2 className="w-12 h-12 text-forest-DEFAULT dark:text-caramel-DEFAULT animate-spin" />
-              <span className="text-sm text-smoke-DEFAULT dark:text-mist-DEFAULT mt-2">
+              <Loader2 className="w-12 h-12 text-rust dark:text-rust-light animate-spin" />
+              <span className="text-sm font-mono text-taupe dark:text-beige mt-2">
                 Scanning file...
               </span>
             </div>
           ) : (
             <>
-              <Upload className="w-12 h-12 text-forest-DEFAULT dark:text-caramel-DEFAULT" />
-              <span className="text-sm text-smoke-DEFAULT dark:text-mist-DEFAULT">
-                Drag & drop files here or click to upload
+              <Upload className="w-12 h-12 text-rust dark:text-rust-light" />
+              <span className="text-sm font-mono text-taupe dark:text-beige">
+                Drag & drop files here or click to upload_
               </span>
             </>
           )}
