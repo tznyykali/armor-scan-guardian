@@ -1,11 +1,6 @@
-export interface EngineScanResult {
-  category: string;
-  engine_name: string;
-  engine_version: string;
-  result: string;
-  method: string;
-  engine_update: string;
-}
+import { Json } from '@/integrations/supabase/types';
+
+export type DetectionEngineType = 'snort' | 'yaralyze' | 'hids' | 'droidbox' | 'androguard';
 
 export interface ScanStats {
   harmless: number;
@@ -17,8 +12,9 @@ export interface ScanStats {
 export interface MLAnalysis {
   model_name: string;
   confidence_score: number;
-  prediction: string;
-  features_analyzed: string[];
+  detection_type: string;
+  model_version?: string;
+  features_analyzed?: string[];
 }
 
 export interface ScanMetadata {
@@ -31,9 +27,9 @@ export interface ScanMetadata {
   analysis_date: string;
   categories: Record<string, string>;
   threat_names: string[];
-  snort_analysis?: any[];
-  hids_analysis?: Record<string, any>;
-  droidbox_analysis?: Record<string, any>;
+  snort_analysis?: Json;
+  hids_analysis?: Json;
+  droidbox_analysis?: Json;
   ml_analysis?: MLAnalysis;
 }
 

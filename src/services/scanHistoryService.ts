@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ScanResult } from '@/types/scan-types';
+import { ScanResult, DetectionEngineType, MLAnalysis } from '@/types/scan-types';
+import { Json } from '@/integrations/supabase/types';
 
 export async function saveScanResult(
   scanType: 'url' | 'file',
@@ -14,7 +15,7 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats,
+      stats: results.stats as Json,
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       file_type: results.metadata.file_info?.type,
@@ -27,40 +28,42 @@ export async function saveScanResult(
 
   // Save detailed scan results
   if (results.detection_details.length > 0) {
+    const scanResults = results.detection_details.map(detail => {
+      const [ruleName, result] = detail.split(': ');
+      return {
+        scan_id: historyEntry.id,
+        rule_name: ruleName,
+        category: 'malware',
+        detection_details: [detail],
+        result_details: { method: result || 'pattern match' } as Json,
+        engine_type: 'yaralyze' as DetectionEngineType,
+        snort_alerts: results.metadata.snort_analysis || [] as Json,
+        hids_findings: results.metadata.hids_analysis || {} as Json,
+        droidbox_analysis: results.metadata.droidbox_analysis || {} as Json
+      };
+    });
+
     const { error: resultsError } = await supabase
       .from('scan_results')
-      .insert(
-        results.detection_details.map(detail => {
-          const [ruleName, result] = detail.split(': ');
-          return {
-            scan_id: historyEntry.id,
-            rule_name: ruleName,
-            category: 'malware',
-            detection_details: [detail],
-            result_details: { method: result || 'pattern match' },
-            engine_type: 'yaralyze',
-            snort_alerts: results.metadata.snort_analysis || [],
-            hids_findings: results.metadata.hids_analysis || {},
-            droidbox_analysis: results.metadata.droidbox_analysis || {}
-          };
-        })
-      );
+      .insert(scanResults);
 
     if (resultsError) throw resultsError;
   }
 
   // Save ML scan results if available
   if (results.metadata.ml_analysis) {
+    const mlResult = {
+      scan_id: historyEntry.id,
+      model_name: results.metadata.ml_analysis.model_name,
+      confidence_score: results.metadata.ml_analysis.confidence_score,
+      detection_type: results.metadata.ml_analysis.detection_type,
+      model_version: results.metadata.ml_analysis.model_version,
+      analysis_metadata: results.metadata.ml_analysis as Json
+    };
+
     const { error: mlError } = await supabase
       .from('ml_scan_results')
-      .insert({
-        scan_id: historyEntry.id,
-        model_name: 'AndroidMalwareDetector',
-        confidence_score: Math.random(), // In a real implementation, this would come from the ML model
-        detection_type: 'malware',
-        model_version: '1.0',
-        analysis_metadata: results.metadata.ml_analysis
-      });
+      .insert(mlResult);
 
     if (mlError) throw mlError;
   }
