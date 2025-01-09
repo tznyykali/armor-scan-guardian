@@ -35,8 +35,7 @@ const Index = () => {
           </p>
           
           <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
-            <div className="group relative overflow-hidden rounded-xl border border-sage-dark/20 bg-sage/50 dark:bg-taupe/50 backdrop-blur-sm transition-all hover:shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-b from-rust/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative overflow-hidden rounded-xl border border-sage-dark/20 bg-sage/50 dark:bg-taupe/50 backdrop-blur-sm transition-all hover:shadow-lg">
               <div className="p-6">
                 <h3 className="text-xl font-mono font-semibold mb-4 text-rust dark:text-rust-light">
                   Optimization_
@@ -46,15 +45,14 @@ const Index = () => {
                 </p>
                 <Button 
                   onClick={() => navigate('/optimize')}
-                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer"
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer z-10 relative"
                 >
                   Start Optimization_
                 </Button>
               </div>
             </div>
             
-            <div className="group relative overflow-hidden rounded-xl border border-sage-dark/20 bg-sage/50 dark:bg-taupe/50 backdrop-blur-sm transition-all hover:shadow-lg">
-              <div className="absolute inset-0 bg-gradient-to-b from-rust/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative overflow-hidden rounded-xl border border-sage-dark/20 bg-sage/50 dark:bg-taupe/50 backdrop-blur-sm transition-all hover:shadow-lg">
               <div className="p-6">
                 <h3 className="text-xl font-mono font-semibold mb-4 text-rust dark:text-rust-light">
                   Scanning_
@@ -64,7 +62,7 @@ const Index = () => {
                 </p>
                 <Button 
                   onClick={() => navigate('/scan')}
-                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer"
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer z-10 relative"
                 >
                   Start Scanning_
                 </Button>
