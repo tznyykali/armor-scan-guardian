@@ -2,6 +2,10 @@
 
 ## Project info
 
+Secure Scan combines cutting-edge machine learning with comprehensive security analysis to protect Android devices from emerging threats. Our system performs real-time malware detection, system optimization, and vulnerability assessments using advanced neural networks and behavioral analysis.
+
+Whether you're scanning suspicious files or optimizing system performance, our ML models provide accurate threat detection and personalized recommendations for maintaining your device's security and efficiency.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
