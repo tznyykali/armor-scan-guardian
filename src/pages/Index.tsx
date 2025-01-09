@@ -1,5 +1,4 @@
-import NetworkBackground from "@/components/NetworkBackground";
-import { Shield, ArrowRight } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -17,7 +16,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen pt-16 bg-beige dark:bg-taupe-dark">
-      <NetworkBackground />
       <div className="relative container mx-auto px-4 py-16">
         <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
           <div className="relative">
@@ -49,7 +47,7 @@ const Index = () => {
                   className="mt-4 font-mono text-rust hover:text-rust-dark dark:text-rust-light dark:hover:text-rust group-hover:bg-rust/5"
                   onClick={() => navigate('/optimize')}
                 >
-                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Optimization_
                 </Button>
               </div>
             </div>
@@ -68,7 +66,7 @@ const Index = () => {
                   className="mt-4 font-mono text-rust hover:text-rust-dark dark:text-rust-light dark:hover:text-rust group-hover:bg-rust/5"
                   onClick={() => navigate('/scan')}
                 >
-                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Scanning_
                 </Button>
               </div>
             </div>

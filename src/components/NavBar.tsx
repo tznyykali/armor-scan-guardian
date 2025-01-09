@@ -1,4 +1,4 @@
-import { Shield, Activity, Search, BarChart2, Menu, Sun, Moon } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
@@ -21,10 +21,10 @@ const NavBar = () => {
   };
 
   const navItems = [
-    { path: "/", icon: Shield, label: "Dashboard" },
-    { path: "/optimize", icon: Activity, label: "Optimize" },
-    { path: "/scan", icon: Search, label: "Scan" },
-    { path: "/results", icon: BarChart2, label: "Results" },
+    { path: "/", label: "Homepage" },
+    { path: "/optimize", label: "Optimize" },
+    { path: "/scan", label: "Scan" },
+    { path: "/results", label: "Results" },
   ];
 
   const NavLinks = () => (
@@ -36,11 +36,10 @@ const NavBar = () => {
           onClick={() => setIsOpen(false)}
           className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 ${
             isActive(item.path)
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+              ? "bg-sage text-rust dark:bg-taupe text-rust-light"
+              : "text-muted-foreground hover:text-rust hover:bg-sage/50 dark:hover:text-rust-light dark:hover:bg-taupe/50"
           }`}
         >
-          <item.icon className="w-5 h-5" />
           <span>{item.label}</span>
         </Link>
       ))}
@@ -53,7 +52,6 @@ const NavBar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
-              <Shield className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold">SecureGuard</span>
             </Link>
           </div>
@@ -92,7 +90,7 @@ const NavBar = () => {
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
+                  Menu
                 </Button>
               </SheetTrigger>
               <SheetContent>
