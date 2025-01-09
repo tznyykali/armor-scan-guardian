@@ -1,16 +1,22 @@
 import { ScanResult } from '@/types/scan-types';
+import { supabase } from '@/integrations/supabase/client';
 
 export async function scanFile(file: File): Promise<ScanResult> {
-  const apiKey = localStorage.getItem('VIRUSTOTAL_API_KEY');
-  if (!apiKey) {
-    throw new Error('VirusTotal API key not found');
+  console.log('Starting file scan with Supabase client...');
+  
+  // Get the API key from Supabase Edge Function
+  const { data: { VIRUSTOTAL_API_KEY }, error: secretError } = await supabase.functions.invoke('get-virustotal-key');
+  
+  if (secretError || !VIRUSTOTAL_API_KEY) {
+    console.error('Error fetching VirusTotal API key:', secretError);
+    throw new Error('Failed to retrieve VirusTotal API key');
   }
 
   try {
-    const uploadUrl = await getUploadUrl(apiKey);
-    const uploadData = await uploadFile(file, uploadUrl, apiKey);
+    const uploadUrl = await getUploadUrl(VIRUSTOTAL_API_KEY);
+    const uploadData = await uploadFile(file, uploadUrl, VIRUSTOTAL_API_KEY);
     const analysisId = uploadData.data.id;
-    return await pollForResults(analysisId, apiKey, file);
+    return await pollForResults(analysisId, VIRUSTOTAL_API_KEY, file);
   } catch (error) {
     console.error('File scan error:', error);
     throw error;
