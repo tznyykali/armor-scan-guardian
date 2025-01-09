@@ -12,24 +12,28 @@ import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <NavBar />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/optimize" element={<Optimize />} />
-            <Route path="/scan" element={<Scan />} />
-            <Route path="/results" element={<Results />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <div className="min-h-screen bg-beige dark:bg-taupe-dark font-mono">
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <NavBar />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/optimize" element={<Optimize />} />
+                <Route path="/scan" element={<Scan />} />
+                <Route path="/results" element={<Results />} />
+              </Routes>
+            </BrowserRouter>
+          </div>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

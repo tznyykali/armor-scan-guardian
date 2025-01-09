@@ -54,7 +54,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-300;
+    @apply bg-beige dark:bg-taupe-dark text-foreground font-mono transition-colors duration-300;
   }
 }
 
@@ -63,13 +63,28 @@
     @apply transition-colors duration-300;
     background-size: 50px 50px;
     background-image: 
-      linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgba(182, 162, 142, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(182, 162, 142, 0.1) 1px, transparent 1px);
   }
 
   .dark .network-grid {
     background-image: 
-      linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+      linear-gradient(to right, rgba(224, 123, 57, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(224, 123, 57, 0.1) 1px, transparent 1px);
   }
+
+  .typing-text {
+    @apply overflow-hidden whitespace-nowrap border-r-2 border-rust dark:border-rust-light;
+    animation: typing 3.5s steps(40, end), blink 0.75s step-end infinite;
+  }
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent }
+  50% { border-color: #E07B39 }
 }
