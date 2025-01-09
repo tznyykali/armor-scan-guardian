@@ -56,6 +56,53 @@ async function performDroidboxAnalysis(content: string) {
   };
 }
 
+async function extractApkMetadata(file: File) {
+  return {
+    package_name: 'com.example.app', // Simulated package name extraction
+    version_code: '1.0.0',
+    min_sdk_version: 21,
+    target_sdk_version: 33,
+    permissions: [
+      'android.permission.INTERNET',
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.WRITE_EXTERNAL_STORAGE',
+      'android.permission.CAMERA',
+      'android.permission.ACCESS_FINE_LOCATION'
+    ].filter(() => Math.random() > 0.4),
+    activities: ['MainActivity', 'SettingsActivity'].filter(() => Math.random() > 0.4),
+    services: ['BackgroundService', 'DataSyncService'].filter(() => Math.random() > 0.4),
+    receivers: ['BootReceiver', 'NotificationReceiver'].filter(() => Math.random() > 0.4),
+    native_libraries: ['libnative.so', 'libcrypto.so'].filter(() => Math.random() > 0.4)
+  };
+}
+
+async function extractUrlMetadata(url: string) {
+  return {
+    domain: new URL(url).hostname,
+    protocol: new URL(url).protocol,
+    path: new URL(url).pathname,
+    query_parameters: new URL(url).search,
+    ssl_certificate: {
+      issuer: 'Example CA',
+      valid_from: new Date().toISOString(),
+      valid_to: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      version: 'TLSv1.3'
+    },
+    headers: {
+      server: 'nginx',
+      content_type: 'text/html',
+      x_frame_options: 'DENY',
+      content_security_policy: "default-src 'self'"
+    },
+    whois_data: {
+      registrar: 'Example Registrar',
+      creation_date: '2020-01-01',
+      expiration_date: '2025-01-01',
+      last_updated: '2023-01-01'
+    }
+  };
+}
+
 export async function scanUrl(url: string): Promise<ScanResult> {
   console.log('Starting multi-engine URL scan...');
   
@@ -68,6 +115,7 @@ export async function scanUrl(url: string): Promise<ScanResult> {
   // Perform multiple engine scans
   const snortAlerts = await performSnortAnalysis(url);
   const hidsFindings = await performHIDSAnalysis(url);
+  const urlMetadata = await extractUrlMetadata(url);
   
   const detectionDetails = yaraRules
     .filter(rule => Math.random() > 0.7)
@@ -92,6 +140,7 @@ export async function scanUrl(url: string): Promise<ScanResult> {
         obfuscation: detectionDetails.filter(d => d.includes('obfuscation')).length > 0 ? 'yes' : 'no',
       },
       threat_names: detectionDetails.map(d => d.split(':')[0]),
+      url_info: urlMetadata,
       snort_analysis: snortAlerts,
       hids_analysis: hidsFindings
     },
@@ -115,6 +164,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
   const snortAlerts = await performSnortAnalysis(fileContent);
   const hidsFindings = await performHIDSAnalysis(fileContent);
   const droidboxResults = await performDroidboxAnalysis(fileContent);
+  const apkMetadata = isApk ? await extractApkMetadata(file) : null;
 
   // Enhanced detection logic for APK files
   const detectionDetails = yaraRules
@@ -166,6 +216,10 @@ export async function scanFile(file: File): Promise<ScanResult> {
         name: file.name,
         size: file.size,
         type: file.type,
+        last_modified: new Date(file.lastModified).toISOString(),
+        mime_type: file.type,
+        extension: file.name.split('.').pop()?.toLowerCase(),
+        apk_metadata: apkMetadata
       },
       snort_analysis: snortAlerts,
       hids_analysis: hidsFindings,
