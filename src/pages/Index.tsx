@@ -71,24 +71,6 @@ const Index = () => {
               </div>
             </div>
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
-            <Button
-              size="lg"
-              onClick={() => navigate('/optimize')}
-              className="bg-rust hover:bg-rust-dark text-beige font-mono dark:bg-rust-light dark:hover:bg-rust"
-            >
-              Start Optimization_
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/scan')}
-              className="border-rust/20 hover:bg-rust/5 text-rust dark:text-rust-light font-mono"
-            >
-              Scan Now_
-            </Button>
-          </div>
         </div>
       </div>
     </div>
