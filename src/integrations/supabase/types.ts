@@ -44,6 +44,42 @@ export type Database = {
           },
         ]
       }
+      ml_model_metadata: {
+        Row: {
+          configuration: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          model_name: string
+          model_path: string
+          model_type: Database["public"]["Enums"]["ml_model_type"]
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          model_name: string
+          model_path: string
+          model_type: Database["public"]["Enums"]["ml_model_type"]
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          model_name?: string
+          model_path?: string
+          model_type?: Database["public"]["Enums"]["ml_model_type"]
+          updated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       ml_scan_results: {
         Row: {
           analysis_metadata: Json | null
@@ -239,7 +275,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      latest_ml_models: {
+        Row: {
+          configuration: Json | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          model_name: string | null
+          model_path: string | null
+          model_type: Database["public"]["Enums"]["ml_model_type"] | null
+          updated_at: string | null
+          version: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
@@ -258,6 +307,10 @@ export type Database = {
         | "droidbox"
         | "androguard"
         | "blacklist"
+      ml_model_type:
+        | "malware_detection"
+        | "performance_optimization"
+        | "resource_usage"
     }
     CompositeTypes: {
       [_ in never]: never
