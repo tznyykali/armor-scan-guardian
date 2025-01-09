@@ -1,10 +1,15 @@
-import { serve } from 'https://deno.fresh.dev/std@v9.6.1/http/server.ts';
-import { corsHeaders } from '../_shared/cors.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -20,6 +25,7 @@ serve(async (req) => {
       throw new Error('No file provided');
     }
 
+    console.log('Getting upload URL from VirusTotal...');
     // Get upload URL
     const uploadUrlResponse = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
       headers: {
@@ -33,6 +39,7 @@ serve(async (req) => {
 
     const { data: uploadUrl } = await uploadUrlResponse.json();
 
+    console.log('Uploading file to VirusTotal...');
     // Upload file
     const uploadFormData = new FormData();
     uploadFormData.append('file', file);
@@ -52,6 +59,7 @@ serve(async (req) => {
     const analysisData = await uploadResponse.json();
 
     // Poll for results
+    console.log('Polling for analysis results...');
     const analysisId = analysisData.data.id;
     let results;
     let attempts = 0;
@@ -74,7 +82,33 @@ serve(async (req) => {
       const data = await analysisResponse.json();
       
       if (data.data.attributes.status === 'completed') {
-        results = data;
+        results = {
+          status: data.data.attributes.status,
+          stats: data.data.attributes.stats || {
+            harmless: 0,
+            malicious: 0,
+            suspicious: 0,
+            undetected: 0
+          },
+          metadata: {
+            file_info: {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+            },
+            engines_used: Object.keys(data.data.attributes.results || {}).length,
+            analysis_date: new Date().toISOString(),
+            categories: data.data.attributes.categories || {},
+            threat_names: Object.values(data.data.attributes.results || {})
+              .map((result: any) => result.result)
+              .filter(Boolean),
+          },
+          detection_details: Object.entries(data.data.attributes.results || {})
+            .filter(([_, result]: [string, any]) => result.result)
+            .map(([engine, result]: [string, any]) => 
+              `${engine}: ${result.result} (${result.method || 'unknown method'})`
+            ),
+        };
         break;
       }
 
@@ -86,6 +120,7 @@ serve(async (req) => {
       throw new Error('Analysis timed out');
     }
 
+    console.log('Analysis complete, returning results');
     return new Response(
       JSON.stringify(results),
       { 
@@ -97,6 +132,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error('Error in scan-file function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

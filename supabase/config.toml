@@ -13,5 +13,4 @@ enabled = true
 port = 54323
 
 [[functions]]
-name = "virus-total-scan"
 verify_jwt = false
