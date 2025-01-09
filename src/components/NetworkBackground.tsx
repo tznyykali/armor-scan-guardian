@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from '@/integrations/supabase/types';
 
 interface ScanStats {
   malicious: number;
@@ -28,7 +29,8 @@ const NetworkBackground = () => {
           .limit(1);
 
         if (!error && data && data.length > 0) {
-          const stats = data[0].stats as ScanStats;
+          // First cast to unknown, then to ScanStats to satisfy TypeScript
+          const stats = (data[0].stats as unknown) as ScanStats;
           const maliciousCount = stats?.malicious || 0;
           setIsMalicious(maliciousCount > 0);
           // Increase animation speed if malicious content detected
