@@ -15,7 +15,7 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats as unknown as Json, // Safe conversion since we added index signature
+      stats: results.stats as unknown as Json,
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       file_type: results.metadata.file_info?.type,
@@ -27,21 +27,22 @@ export async function saveScanResult(
   if (historyError) throw historyError;
 
   // Save detailed scan results
-  if (results.detection_details.length > 0) {
-    const scanResults = results.detection_details.map(detail => {
-      const [ruleName, result] = detail.split(': ');
-      return {
-        scan_id: historyEntry.id,
-        rule_name: ruleName,
-        category: 'malware',
-        detection_details: [detail],
-        result_details: { method: result || 'pattern match' } as Json,
-        engine_type: 'yaralyze' as DetectionEngineType,
-        snort_alerts: results.metadata.snort_analysis || [] as Json,
-        hids_findings: results.metadata.hids_analysis || {} as Json,
-        droidbox_analysis: results.metadata.droidbox_analysis || {} as Json
-      };
-    });
+  if (results.detection_details && results.detection_details.length > 0) {
+    const scanResults = results.detection_details.map(detail => ({
+      scan_id: historyEntry.id,
+      rule_name: detail.engine_name,
+      category: detail.category,
+      detection_details: [detail.result],
+      result_details: { 
+        method: detail.method,
+        engine_version: detail.engine_version,
+        engine_update: detail.engine_update
+      } as Json,
+      engine_type: 'antivirus' as DetectionEngineType,
+      engine_name: detail.engine_name,
+      engine_version: detail.engine_version,
+      engine_update: detail.engine_update
+    }));
 
     const { error: resultsError } = await supabase
       .from('scan_results')
@@ -58,7 +59,7 @@ export async function saveScanResult(
       confidence_score: results.metadata.ml_analysis.confidence_score,
       detection_type: results.metadata.ml_analysis.detection_type,
       model_version: results.metadata.ml_analysis.model_version,
-      analysis_metadata: results.metadata.ml_analysis as unknown as Json // Safe conversion since we added index signature
+      analysis_metadata: results.metadata.ml_analysis as unknown as Json
     };
 
     const { error: mlError } = await supabase
