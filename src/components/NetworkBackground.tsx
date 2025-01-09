@@ -51,7 +51,7 @@ const NetworkBackground = () => {
         // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(224, 123, 57, 0.6)';
+        ctx.fillStyle = 'rgba(182, 162, 142, 0.6)'; // Subtle taupe color for nodes
         ctx.fill();
 
         // Connect particles
@@ -64,7 +64,7 @@ const NetworkBackground = () => {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(224, 123, 57, ${0.2 * (1 - distance / connectionDistance)})`;
+            ctx.strokeStyle = `rgba(182, 162, 142, ${0.2 * (1 - distance / connectionDistance)})`; // Subtle taupe color for connections
             ctx.stroke();
           }
         }
