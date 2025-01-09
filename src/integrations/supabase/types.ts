@@ -257,6 +257,7 @@ export type Database = {
         | "hids"
         | "droidbox"
         | "androguard"
+        | "blacklist"
     }
     CompositeTypes: {
       [_ in never]: never

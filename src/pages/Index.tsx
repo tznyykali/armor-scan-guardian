@@ -45,9 +45,8 @@ const Index = () => {
                   Advanced system optimization for Android devices, enhancing performance and security.
                 </p>
                 <Button 
-                  variant="ghost" 
-                  className="mt-4 font-mono text-rust hover:text-rust-dark dark:text-rust-light dark:hover:text-rust group-hover:bg-rust/5"
                   onClick={() => navigate('/optimize')}
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono"
                 >
                   Start Optimization_
                 </Button>
@@ -64,9 +63,8 @@ const Index = () => {
                   Comprehensive malware detection for both URLs and files with real-time analysis.
                 </p>
                 <Button 
-                  variant="ghost" 
-                  className="mt-4 font-mono text-rust hover:text-rust-dark dark:text-rust-light dark:hover:text-rust group-hover:bg-rust/5"
                   onClick={() => navigate('/scan')}
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono"
                 >
                   Start Scanning_
                 </Button>
