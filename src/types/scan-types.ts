@@ -14,6 +14,13 @@ export interface ScanStats {
   undetected: number;
 }
 
+export interface MLAnalysis {
+  model_name: string;
+  confidence_score: number;
+  prediction: string;
+  features_analyzed: string[];
+}
+
 export interface ScanMetadata {
   file_info?: {
     name: string;
@@ -24,6 +31,10 @@ export interface ScanMetadata {
   analysis_date: string;
   categories: Record<string, string>;
   threat_names: string[];
+  snort_analysis?: any[];
+  hids_analysis?: Record<string, any>;
+  droidbox_analysis?: Record<string, any>;
+  ml_analysis?: MLAnalysis;
 }
 
 export interface ScanResult {
