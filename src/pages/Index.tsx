@@ -15,7 +15,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen pt-16 bg-beige dark:bg-taupe-dark">
+    <div className="min-h-screen pt-16 bg-background">
       <div className="relative container mx-auto px-4 py-16">
         <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
           <div className="relative">
