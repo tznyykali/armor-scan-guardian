@@ -1,9 +1,39 @@
 import React, { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { useLocation } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 const NetworkBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
+  const location = useLocation();
+  const [isMalicious, setIsMalicious] = React.useState(false);
+  const animationSpeedRef = useRef(0.5); // Default speed
+
+  useEffect(() => {
+    // Only check for malicious content on the results page
+    if (location.pathname === '/results') {
+      const checkLatestScan = async () => {
+        const { data, error } = await supabase
+          .from('scan_history')
+          .select('stats')
+          .order('scan_timestamp', { ascending: false })
+          .limit(1);
+
+        if (!error && data && data.length > 0) {
+          const maliciousCount = data[0].stats?.malicious || 0;
+          setIsMalicious(maliciousCount > 0);
+          // Increase animation speed if malicious content detected
+          animationSpeedRef.current = maliciousCount > 0 ? 2 : 0.5;
+        }
+      };
+
+      checkLatestScan();
+    } else {
+      setIsMalicious(false);
+      animationSpeedRef.current = 0.5;
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,8 +53,8 @@ const NetworkBackground = () => {
     // Particle system
     const particles: { x: number; y: number; vx: number; vy: number }[] = [];
     const particleCount = 100;
-    const connectionDistance = 200; // Increased from 150
-    const particleSize = 3; // Increased from 2
+    const connectionDistance = 200;
+    const particleSize = 3;
 
     // Initialize particles
     for (let i = 0; i < particleCount; i++) {
@@ -42,20 +72,27 @@ const NetworkBackground = () => {
 
       // Update and draw particles
       particles.forEach((particle, i) => {
-        // Move particle
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+        // Move particle with dynamic speed
+        particle.x += particle.vx * animationSpeedRef.current;
+        particle.y += particle.vy * animationSpeedRef.current;
 
         // Bounce off walls
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Draw particle with theme-aware colors
+        // Draw particle with theme-aware and malicious-aware colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2);
-        ctx.fillStyle = theme === 'dark' 
-          ? 'rgba(220, 228, 201, 0.6)' // sage light color for dark mode
-          : 'rgba(224, 123, 57, 0.6)'; // rust color for light mode
+        
+        if (isMalicious) {
+          // Pulsing red effect for malicious content
+          const pulseIntensity = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
+          ctx.fillStyle = `rgba(255, 0, 0, ${pulseIntensity})`;
+        } else {
+          ctx.fillStyle = theme === 'dark' 
+            ? 'rgba(220, 228, 201, 0.6)' // sage light color for dark mode
+            : 'rgba(224, 123, 57, 0.6)'; // rust color for light mode
+        }
         ctx.fill();
 
         // Connect particles
@@ -68,9 +105,16 @@ const NetworkBackground = () => {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = theme === 'dark'
-              ? `rgba(220, 228, 201, ${0.3 * (1 - distance / connectionDistance)})` // sage light color for dark mode
-              : `rgba(224, 123, 57, ${0.3 * (1 - distance / connectionDistance)})`; // rust color for light mode
+            
+            if (isMalicious) {
+              // Pulsing red connections for malicious content
+              const pulseIntensity = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
+              ctx.strokeStyle = `rgba(255, 0, 0, ${0.3 * (1 - distance / connectionDistance) * pulseIntensity})`;
+            } else {
+              ctx.strokeStyle = theme === 'dark'
+                ? `rgba(220, 228, 201, ${0.3 * (1 - distance / connectionDistance)})` // sage light color for dark mode
+                : `rgba(224, 123, 57, ${0.3 * (1 - distance / connectionDistance)})`; // rust color for light mode
+            }
             ctx.stroke();
           }
         }
@@ -84,13 +128,17 @@ const NetworkBackground = () => {
     return () => {
       window.removeEventListener('resize', setCanvasSize);
     };
-  }, [theme]); // Add theme as dependency to update colors when theme changes
+  }, [theme, isMalicious]); // Add isMalicious as dependency
 
   return (
     <div className="fixed inset-0 z-0">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 opacity-40 mix-blend-multiply dark:mix-blend-screen"
+        className={`absolute inset-0 ${
+          isMalicious 
+            ? 'opacity-60 mix-blend-color-dodge' 
+            : 'opacity-40 mix-blend-multiply dark:mix-blend-screen'
+        }`}
       />
     </div>
   );

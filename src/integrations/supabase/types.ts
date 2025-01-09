@@ -6,15 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface SystemMetrics {
-  cpuUsage: number;
-  memoryUsage: number;
-  batteryLevel: number;
-  storage: number;
-  networkActivity?: number;
-  runningProcesses?: string[];
-}
-
 export type Database = {
   public: {
     Tables: {
@@ -423,4 +414,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
