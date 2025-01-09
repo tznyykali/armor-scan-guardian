@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Info, Shield, Activity, Bug, Cpu } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -8,6 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import ScanStats from './scan-results/ScanStats';
+import EngineResults from './scan-results/EngineResults';
+import MLResults from './scan-results/MLResults';
+import YaraResults from './scan-results/YaraResults';
 
 interface ScanResultCardProps {
   result: {
@@ -40,27 +44,27 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       try {
-        // Fetch YARA results
-        const { data: yaraData } = await supabase
-          .from('advanced_scan_results')
-          .select('*')
-          .eq('scan_id', result.id);
+        const [yaraData, mlData, engineData] = await Promise.all([
+          supabase
+            .from('advanced_scan_results')
+            .select('*')
+            .eq('scan_id', result.id)
+            .then(({ data }) => data || []),
+          supabase
+            .from('ml_scan_results')
+            .select('*')
+            .eq('scan_id', result.id)
+            .then(({ data }) => data || []),
+          supabase
+            .from('scan_results')
+            .select('*')
+            .eq('scan_id', result.id)
+            .then(({ data }) => data || [])
+        ]);
         
-        // Fetch ML model results
-        const { data: mlData } = await supabase
-          .from('ml_scan_results')
-          .select('*')
-          .eq('scan_id', result.id);
-        
-        // Fetch engine-specific results
-        const { data: engineData } = await supabase
-          .from('scan_results')
-          .select('*')
-          .eq('scan_id', result.id);
-        
-        if (yaraData) setYaraResults(yaraData);
-        if (mlData) setMlResults(mlData);
-        if (engineData) setEngineResults(engineData);
+        setYaraResults(yaraData);
+        setMlResults(mlData);
+        setEngineResults(engineData);
       } catch (error) {
         console.error('Error fetching detailed results:', error);
       }
@@ -95,144 +99,12 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
         <CardContent>
           <div className="space-y-4">
             {result.results.stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-3 bg-white/50 dark:bg-midnight-light/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Harmless</p>
-                  <p className="text-xl font-semibold text-forest-DEFAULT">
-                    {result.results.stats.harmless}
-                  </p>
-                </div>
-                <div className="p-3 bg-white/50 dark:bg-midnight-light/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Malicious</p>
-                  <p className="text-xl font-semibold text-destructive">
-                    {result.results.stats.malicious}
-                  </p>
-                </div>
-                <div className="p-3 bg-white/50 dark:bg-midnight-light/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Suspicious</p>
-                  <p className="text-xl font-semibold text-amber-500">
-                    {result.results.stats.suspicious}
-                  </p>
-                </div>
-                <div className="p-3 bg-white/50 dark:bg-midnight-light/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Undetected</p>
-                  <p className="text-xl font-semibold text-gray-500">
-                    {result.results.stats.undetected}
-                  </p>
-                </div>
-              </div>
+              <ScanStats stats={result.results.stats} />
             )}
             
-            {engineResults.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Engine Analysis Results
-                </h4>
-                <div className="space-y-3">
-                  {engineResults.map((engine, index) => (
-                    <div
-                      key={index}
-                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h5 className="font-semibold text-sm">{engine.engine_name}</h5>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Type: {engine.engine_type}
-                          </p>
-                        </div>
-                      </div>
-                      {engine.snort_alerts && engine.snort_alerts.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm font-medium">Snort Alerts:</p>
-                          <ul className="text-sm text-muted-foreground">
-                            {engine.snort_alerts.map((alert: string, i: number) => (
-                              <li key={i}>{alert}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {engine.hids_findings && Object.keys(engine.hids_findings).length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm font-medium">HIDS Findings:</p>
-                          <pre className="text-xs bg-midnight-DEFAULT/10 p-2 rounded mt-1 overflow-x-auto">
-                            {JSON.stringify(engine.hids_findings, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {mlResults.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                  <Cpu className="h-4 w-4" />
-                  Machine Learning Analysis
-                </h4>
-                <div className="space-y-3">
-                  {mlResults.map((ml, index) => (
-                    <div
-                      key={index}
-                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h5 className="font-semibold text-sm">{ml.model_name}</h5>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Detection Type: {ml.detection_type}
-                          </p>
-                        </div>
-                        <span className="text-xs px-2 py-1 rounded-full bg-forest-DEFAULT/10 text-forest-DEFAULT">
-                          {(ml.confidence_score * 100).toFixed(1)}% confidence
-                        </span>
-                      </div>
-                      {ml.analysis_metadata && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground">
-                            Model Version: {ml.model_version || 'N/A'}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {yaraResults.length > 0 && (
-              <div className="mt-6">
-                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                  <Bug className="h-4 w-4" />
-                  YARA Analysis Results
-                </h4>
-                <div className="space-y-3">
-                  {yaraResults.map((yara, index) => (
-                    <div
-                      key={index}
-                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h5 className="font-semibold text-sm">{yara.rule_match}</h5>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Category: {yara.category}
-                          </p>
-                        </div>
-                      </div>
-                      {yara.detection_details && (
-                        <p className="text-sm mt-2 text-muted-foreground">
-                          {yara.detection_details.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <EngineResults results={engineResults} />
+            <MLResults results={mlResults} />
+            <YaraResults results={yaraResults} />
 
             {result.results.metadata && (
               <div className="mt-4">
