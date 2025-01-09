@@ -15,7 +15,7 @@ export async function saveScanResult(
       scan_type: scanType,
       file_name: target,
       scan_status: results.status,
-      stats: results.stats as Json,
+      stats: results.stats as unknown as Json, // Safe conversion since we added index signature
       total_engines: results.metadata.engines_used,
       analysis_date: results.metadata.analysis_date,
       file_type: results.metadata.file_info?.type,
@@ -58,7 +58,7 @@ export async function saveScanResult(
       confidence_score: results.metadata.ml_analysis.confidence_score,
       detection_type: results.metadata.ml_analysis.detection_type,
       model_version: results.metadata.ml_analysis.model_version,
-      analysis_metadata: results.metadata.ml_analysis as Json
+      analysis_metadata: results.metadata.ml_analysis as unknown as Json // Safe conversion since we added index signature
     };
 
     const { error: mlError } = await supabase

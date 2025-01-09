@@ -7,6 +7,7 @@ export interface ScanStats {
   malicious: number;
   suspicious: number;
   undetected: number;
+  [key: string]: number; // Add index signature for Json compatibility
 }
 
 export interface MLAnalysis {
@@ -15,6 +16,7 @@ export interface MLAnalysis {
   detection_type: string;
   model_version?: string;
   features_analyzed?: string[];
+  [key: string]: string | number | string[] | undefined; // Add index signature for Json compatibility
 }
 
 export interface ScanMetadata {
