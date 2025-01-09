@@ -2,6 +2,7 @@ import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import NetworkBackground from "@/components/NetworkBackground";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen pt-16 bg-background">
+    <div className="relative min-h-screen pt-16 bg-transparent">
+      <NetworkBackground />
       <div className="relative container mx-auto px-4 py-16">
         <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
           <div className="relative">

@@ -81,12 +81,11 @@ const NetworkBackground = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0">
+    <div className="fixed inset-0 -z-10">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-30"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
     </div>
   );
 };
