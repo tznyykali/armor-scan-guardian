@@ -23,8 +23,8 @@ const NetworkBackground = () => {
     // Particle system
     const particles: { x: number; y: number; vx: number; vy: number }[] = [];
     const particleCount = 100;
-    const connectionDistance = 150;
-    const particleSize = 2;
+    const connectionDistance = 200; // Increased from 150
+    const particleSize = 3; // Increased from 2
 
     // Initialize particles
     for (let i = 0; i < particleCount; i++) {
