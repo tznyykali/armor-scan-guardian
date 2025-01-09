@@ -52,7 +52,7 @@ const NavBar = () => {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link to="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold">SecureGuard</span>
+              <span className="text-xl font-bold">Secure Scan</span>
             </Link>
           </div>
 
