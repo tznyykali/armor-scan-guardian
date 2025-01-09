@@ -37,8 +37,10 @@ const EngineResults = ({ results }: EngineResultsProps) => {
               <div className="mt-2">
                 <p className="text-sm font-medium">Snort Alerts:</p>
                 <ul className="text-sm text-muted-foreground">
-                  {engine.snort_alerts.map((alert: string, i: number) => (
-                    <li key={i}>{alert}</li>
+                  {engine.snort_alerts.map((alert, i) => (
+                    <li key={i} className="mt-1">
+                      {alert.rule_id}: {alert.message}
+                    </li>
                   ))}
                 </ul>
               </div>
