@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 
 const NetworkBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,10 +50,12 @@ const NetworkBackground = () => {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Draw particle
+        // Draw particle with theme-aware colors
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(182, 162, 142, 0.8)'; // Increased opacity for particles
+        ctx.fillStyle = theme === 'dark' 
+          ? 'rgba(220, 228, 201, 0.6)' // sage light color for dark mode
+          : 'rgba(182, 162, 142, 0.6)'; // taupe color for light mode
         ctx.fill();
 
         // Connect particles
@@ -64,7 +68,9 @@ const NetworkBackground = () => {
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(182, 162, 142, ${0.4 * (1 - distance / connectionDistance)})`; // Increased opacity for connections
+            ctx.strokeStyle = theme === 'dark'
+              ? `rgba(220, 228, 201, ${0.3 * (1 - distance / connectionDistance)})` // sage light color for dark mode
+              : `rgba(182, 162, 142, ${0.3 * (1 - distance / connectionDistance)})`; // taupe color for light mode
             ctx.stroke();
           }
         }
@@ -78,13 +84,13 @@ const NetworkBackground = () => {
     return () => {
       window.removeEventListener('resize', setCanvasSize);
     };
-  }, []);
+  }, [theme]); // Add theme as dependency to update colors when theme changes
 
   return (
-    <div className="fixed inset-0 -z-10">
+    <div className="fixed inset-0 z-0">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 opacity-70" // Increased opacity from 30 to 70
+        className="absolute inset-0 opacity-40 mix-blend-multiply dark:mix-blend-screen"
       />
     </div>
   );
