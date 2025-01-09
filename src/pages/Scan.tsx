@@ -12,7 +12,7 @@ const Scan = () => {
   }, []);
 
   return (
-    <div className="min-h-screen pt-16 bg-beige dark:bg-taupe-dark">
+    <div className="min-h-screen pt-16 bg-white">
       <NetworkBackground />
       <div className="relative container mx-auto px-4 py-16">
         <h2 className="text-3xl font-mono text-rust-dark dark:text-rust-light mb-12 inline-block">
