@@ -1,18 +1,10 @@
-# Welcome to your Lovable project
+# Secure Scan - Android Malware Detection System with Machine Learning Approach
 
 ## Project info
-
-**URL**: https://lovable.dev/projects/abc3a0fb-0e54-4044-bb55-c114c3c58862
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/abc3a0fb-0e54-4044-bb55-c114c3c58862) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
@@ -34,6 +26,9 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+or
+Download the repo as zip file and unzip it. Open your IDE and open a new folder, choose this repo and ready to use.
 ```
 
 **Edit a file directly in GitHub**
@@ -60,10 +55,3 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/abc3a0fb-0e54-4044-bb55-c114c3c58862) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
