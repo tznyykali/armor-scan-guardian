@@ -1,14 +1,17 @@
 import { SystemMetrics } from '@/types/system';
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
 
 export async function analyzeSystemMetrics(metrics: SystemMetrics) {
-  const { cpuUsage, memoryUsage, batteryLevel, storage } = metrics;
-
-  // Save metrics to the database
   const { data, error } = await supabase
     .from('system_metrics')
-    .insert([{ cpuUsage, memoryUsage, batteryLevel, storage }]);
+    .insert({
+      cpu_usage: metrics.cpuUsage,
+      memory_usage: metrics.memoryUsage,
+      battery_level: metrics.batteryLevel,
+      storage: metrics.storage,
+      network_activity: metrics.networkActivity,
+      running_processes: metrics.runningProcesses
+    });
 
   if (error) {
     console.error('Error saving system metrics:', error);

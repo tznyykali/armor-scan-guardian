@@ -243,6 +243,42 @@ export type Database = {
           },
         ]
       }
+      system_metrics: {
+        Row: {
+          battery_level: number
+          cpu_usage: number
+          created_at: string | null
+          id: string
+          memory_usage: number
+          network_activity: number | null
+          running_processes: string[] | null
+          storage: number
+          user_id: string | null
+        }
+        Insert: {
+          battery_level: number
+          cpu_usage: number
+          created_at?: string | null
+          id?: string
+          memory_usage: number
+          network_activity?: number | null
+          running_processes?: string[] | null
+          storage: number
+          user_id?: string | null
+        }
+        Update: {
+          battery_level?: number
+          cpu_usage?: number
+          created_at?: string | null
+          id?: string
+          memory_usage?: number
+          network_activity?: number | null
+          running_processes?: string[] | null
+          storage?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       yara_rules: {
         Row: {
           category: Database["public"]["Enums"]["detection_category"]
