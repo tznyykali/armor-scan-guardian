@@ -31,7 +31,7 @@ const Index = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-taupe dark:text-beige font-mono max-w-2xl">
-            Military-grade Android security and optimization system
+            Advanced ML-powered Android security and performance analysis system
           </p>
           
           <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
