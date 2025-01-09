@@ -3,6 +3,13 @@ import { useTheme } from 'next-themes';
 import { useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 
+interface ScanStats {
+  malicious: number;
+  harmless: number;
+  suspicious: number;
+  undetected: number;
+}
+
 const NetworkBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
@@ -21,7 +28,8 @@ const NetworkBackground = () => {
           .limit(1);
 
         if (!error && data && data.length > 0) {
-          const maliciousCount = data[0].stats?.malicious || 0;
+          const stats = data[0].stats as ScanStats;
+          const maliciousCount = stats?.malicious || 0;
           setIsMalicious(maliciousCount > 0);
           // Increase animation speed if malicious content detected
           animationSpeedRef.current = maliciousCount > 0 ? 2 : 0.5;

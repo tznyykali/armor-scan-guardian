@@ -154,7 +154,7 @@ export type Database = {
           analysis_date?: string | null
           file_name?: string
           file_size?: number | null
-          file_type?: string | null
+          file_type?: string
           id?: string
           permalink?: string | null
           scan_status?: string
@@ -318,7 +318,7 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+export type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   PublicTableNameOrOptions extends
@@ -327,7 +327,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -414,3 +414,12 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
+export interface SystemMetrics {
+  cpuUsage: number;
+  memoryUsage: number;
+  batteryLevel: number;
+  storage: number;
+  networkActivity?: number;
+  runningProcesses?: string[];
+}
