@@ -46,7 +46,7 @@ const Index = () => {
                 </p>
                 <Button 
                   onClick={() => navigate('/optimize')}
-                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono"
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer"
                 >
                   Start Optimization_
                 </Button>
@@ -64,7 +64,7 @@ const Index = () => {
                 </p>
                 <Button 
                   onClick={() => navigate('/scan')}
-                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono"
+                  className="w-full mt-4 bg-rust hover:bg-rust-dark text-beige font-mono cursor-pointer"
                 >
                   Start Scanning_
                 </Button>
