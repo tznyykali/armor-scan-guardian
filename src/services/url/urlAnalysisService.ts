@@ -1,7 +1,7 @@
 import { extractUrlMetadata } from './urlMetadataService';
 import { performSnortAnalysis, performHIDSAnalysis } from '../security/securityAnalysisService';
 import { calculateRiskScore } from '../utils/riskCalculationUtils';
-import { ScanResult } from '@/types/scan-types';
+import { ScanResult, DetectionDetail } from '@/types/scan-types';
 import { supabase } from '@/integrations/supabase/client';
 
 export async function scanUrl(url: string): Promise<ScanResult> {
@@ -42,7 +42,7 @@ export async function scanUrl(url: string): Promise<ScanResult> {
         encryption: hasSystemFindings ? 'yes' : 'no',
         obfuscation: hasSuspiciousAlerts ? 'yes' : 'no',
       },
-      threat_names: detectionDetails.map(d => d.split(':')[0]),
+      threat_names: detectionDetails.map(d => d.engine_name),
       url_info: urlMetadata,
       snort_analysis: snortAlerts,
       hids_analysis: hidsFindings
@@ -57,15 +57,57 @@ function generateDetectionDetails(
   hasSystemFindings: boolean,
   yaraRules: any[],
   riskScore: number
-): string[] {
-  return [
-    ...(hasHighRiskFactors ? ['High risk URL characteristics detected'] : []),
-    ...(hasSuspiciousAlerts ? ['Multiple security alerts triggered'] : []),
-    ...(hasSystemFindings ? ['Suspicious network behavior detected'] : []),
-    ...yaraRules
-      .filter(rule => Math.random() > (riskScore > 50 ? 0.3 : 0.8))
-      .map(rule => `${rule.name}: Detected (pattern match)`)
-  ];
+): DetectionDetail[] {
+  const details: DetectionDetail[] = [];
+
+  if (hasHighRiskFactors) {
+    details.push({
+      engine_name: 'RiskAnalyzer',
+      category: 'risk',
+      result: 'High risk URL characteristics detected',
+      method: 'antivirus',
+      engine_version: '1.0',
+      engine_update: new Date().toISOString()
+    });
+  }
+
+  if (hasSuspiciousAlerts) {
+    details.push({
+      engine_name: 'AlertMonitor',
+      category: 'alert',
+      result: 'Multiple security alerts triggered',
+      method: 'antivirus',
+      engine_version: '1.0',
+      engine_update: new Date().toISOString()
+    });
+  }
+
+  if (hasSystemFindings) {
+    details.push({
+      engine_name: 'SystemAnalyzer',
+      category: 'system',
+      result: 'Suspicious network behavior detected',
+      method: 'antivirus',
+      engine_version: '1.0',
+      engine_update: new Date().toISOString()
+    });
+  }
+
+  // Add YARA rule detections based on risk score
+  yaraRules
+    .filter(rule => Math.random() > (riskScore > 50 ? 0.3 : 0.8))
+    .forEach(rule => {
+      details.push({
+        engine_name: rule.name,
+        category: rule.category,
+        result: 'Detected (pattern match)',
+        method: 'antivirus',
+        engine_version: '1.0',
+        engine_update: new Date().toISOString()
+      });
+    });
+
+  return details;
 }
 
 function determineStatus(riskScore: number): string {

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { ScanResult, DetectionEngineType, MLAnalysis } from '@/types/scan-types';
+import { ScanResult, DetectionEngineType, MLAnalysis, DetectionDetail } from '@/types/scan-types';
 import { Json } from '@/integrations/supabase/types';
 
 export async function saveScanResult(
@@ -30,7 +30,7 @@ export async function saveScanResult(
   if (results.detection_details && results.detection_details.length > 0) {
     const scanResults = results.detection_details.map(detail => ({
       scan_id: historyEntry.id,
-      rule_name: detail.engine_name,
+      rule_name: detail.engine_name, // Use engine name as rule name
       category: detail.category,
       detection_details: [detail.result],
       result_details: { 
@@ -38,10 +38,11 @@ export async function saveScanResult(
         engine_version: detail.engine_version,
         engine_update: detail.engine_update
       } as Json,
-      engine_type: 'antivirus' as DetectionEngineType,
+      engine_type: detail.method as DetectionEngineType, // Convert method to engine type
       engine_name: detail.engine_name,
       engine_version: detail.engine_version,
-      engine_update: detail.engine_update
+      engine_update: detail.engine_update,
+      description: `Detection by ${detail.engine_name}` // Add description field
     }));
 
     const { error: resultsError } = await supabase
