@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,7 +25,6 @@ serve(async (req) => {
     }
 
     console.log('Getting upload URL from VirusTotal...');
-    // Get upload URL
     const uploadUrlResponse = await fetch('https://www.virustotal.com/api/v3/files/upload_url', {
       headers: {
         'x-apikey': VIRUSTOTAL_API_KEY,
@@ -40,7 +38,6 @@ serve(async (req) => {
     const { data: uploadUrl } = await uploadUrlResponse.json();
 
     console.log('Uploading file to VirusTotal...');
-    // Upload file
     const uploadFormData = new FormData();
     uploadFormData.append('file', file);
 
@@ -58,7 +55,6 @@ serve(async (req) => {
 
     const analysisData = await uploadResponse.json();
 
-    // Poll for results
     console.log('Polling for analysis results...');
     const analysisId = analysisData.data.id;
     let results;
@@ -82,6 +78,7 @@ serve(async (req) => {
       const data = await analysisResponse.json();
       
       if (data.data.attributes.status === 'completed') {
+        // Enhanced file information and analysis results
         results = {
           status: data.data.attributes.status,
           stats: data.data.attributes.stats || {
@@ -95,6 +92,14 @@ serve(async (req) => {
               name: file.name,
               size: file.size,
               type: file.type,
+              last_modified: new Date(file.lastModified).toISOString(),
+              mime_type: file.type,
+              md5: data.data.attributes.md5 || 'Not available',
+              sha1: data.data.attributes.sha1 || 'Not available',
+              sha256: data.data.attributes.sha256 || 'Not available',
+              file_type_extension: data.data.attributes.type_extension || file.name.split('.').pop(),
+              file_type_description: data.data.attributes.type_description || 'Not available',
+              size_bytes: data.data.attributes.size || file.size,
             },
             engines_used: Object.keys(data.data.attributes.results || {}).length,
             analysis_date: new Date().toISOString(),
@@ -102,12 +107,20 @@ serve(async (req) => {
             threat_names: Object.values(data.data.attributes.results || {})
               .map((result: any) => result.result)
               .filter(Boolean),
+            sandbox_verdicts: data.data.attributes.sandbox_verdicts || {},
+            popular_threat_classification: data.data.attributes.popular_threat_classification || {},
+            file_type_tags: data.data.attributes.type_tags || [],
           },
           detection_details: Object.entries(data.data.attributes.results || {})
             .filter(([_, result]: [string, any]) => result.result)
-            .map(([engine, result]: [string, any]) => 
-              `${engine}: ${result.result} (${result.method || 'unknown method'})`
-            ),
+            .map(([engine, result]: [string, any]) => ({
+              engine_name: engine,
+              category: result.category || 'unknown',
+              result: result.result,
+              method: result.method || 'signature-based',
+              engine_version: result.engine_version || 'N/A',
+              engine_update: result.engine_update || 'N/A'
+            })),
         };
         break;
       }
