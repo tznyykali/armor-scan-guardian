@@ -2,9 +2,18 @@ import NetworkBackground from "@/components/NetworkBackground";
 import { Shield, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Load the Share Tech Mono font
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }, []);
 
   return (
     <div className="min-h-screen pt-16 bg-beige dark:bg-taupe-dark">
@@ -16,8 +25,9 @@ const Index = () => {
             <div className="absolute inset-0 bg-rust/20 blur-3xl -z-10 rounded-full" />
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-mono font-bold text-rust dark:text-rust-light typing-text">
+          <h1 className="text-4xl md:text-6xl font-mono font-bold text-rust dark:text-rust-light inline-block">
             Secure Scan_
+            <span className="animate-cursor-blink border-r-2 border-rust ml-1">|</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-taupe dark:text-beige font-mono max-w-2xl">
