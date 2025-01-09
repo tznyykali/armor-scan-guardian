@@ -16,10 +16,10 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen pt-16 bg-transparent">
+    <div className="h-screen overflow-hidden bg-transparent">
       <NetworkBackground />
-      <div className="relative container mx-auto px-4 py-16">
-        <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl mx-auto">
+      <div className="relative h-full container mx-auto px-4 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl">
           <div className="relative">
             <Shield className="w-24 h-24 text-rust dark:text-rust-light animate-pulse" />
             <div className="absolute inset-0 bg-rust/20 blur-3xl -z-10 rounded-full" />
