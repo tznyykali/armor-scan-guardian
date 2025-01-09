@@ -1,13 +1,22 @@
 import { Json } from '@/integrations/supabase/types';
 
-export type DetectionEngineType = 'snort' | 'yaralyze' | 'hids' | 'droidbox' | 'androguard';
+export type DetectionEngineType = 'snort' | 'yaralyze' | 'hids' | 'droidbox' | 'androguard' | 'antivirus';
+
+export interface DetectionDetail {
+  engine_name: string;
+  category: string;
+  result: string;
+  method: string;
+  engine_version: string;
+  engine_update: string;
+}
 
 export interface ScanStats {
   harmless: number;
   malicious: number;
   suspicious: number;
   undetected: number;
-  [key: string]: number; // Add index signature for Json compatibility
+  [key: string]: number;
 }
 
 export interface MLAnalysis {
@@ -16,7 +25,7 @@ export interface MLAnalysis {
   detection_type: string;
   model_version?: string;
   features_analyzed?: string[];
-  [key: string]: string | number | string[] | undefined; // Add index signature for Json compatibility
+  [key: string]: string | number | string[] | undefined;
 }
 
 export interface FileInfo {
@@ -81,7 +90,7 @@ export interface ScanResult {
   status: string;
   stats: ScanStats;
   metadata: ScanMetadata;
-  detection_details: string[];
+  detection_details: DetectionDetail[];
   file_path?: string;
   permalink?: string;
 }
