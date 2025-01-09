@@ -44,6 +44,47 @@ export type Database = {
           },
         ]
       }
+      ml_scan_results: {
+        Row: {
+          analysis_metadata: Json | null
+          confidence_score: number
+          created_at: string | null
+          detection_type: string
+          id: string
+          model_name: string
+          model_version: string | null
+          scan_id: string | null
+        }
+        Insert: {
+          analysis_metadata?: Json | null
+          confidence_score: number
+          created_at?: string | null
+          detection_type: string
+          id?: string
+          model_name: string
+          model_version?: string | null
+          scan_id?: string | null
+        }
+        Update: {
+          analysis_metadata?: Json | null
+          confidence_score?: number
+          created_at?: string | null
+          detection_type?: string
+          id?: string
+          model_name?: string
+          model_version?: string | null
+          scan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_scan_results_scan_id_fkey"
+            columns: ["scan_id"]
+            isOneToOne: false
+            referencedRelation: "scan_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scan_history: {
         Row: {
           analysis_date: string | null
@@ -95,48 +136,66 @@ export type Database = {
           created_at: string | null
           description: string | null
           detection_details: string[] | null
+          droidbox_analysis: Json | null
           engine_name: string | null
+          engine_type:
+            | Database["public"]["Enums"]["detection_engine_type"]
+            | null
           engine_update: string | null
           engine_version: string | null
           file_path: string | null
+          hids_findings: Json | null
           id: string
           metadata: Json | null
           result_details: Json | null
           rule_name: string
           scan_id: string | null
           severity: string | null
+          snort_alerts: Json | null
         }
         Insert: {
           category?: string | null
           created_at?: string | null
           description?: string | null
           detection_details?: string[] | null
+          droidbox_analysis?: Json | null
           engine_name?: string | null
+          engine_type?:
+            | Database["public"]["Enums"]["detection_engine_type"]
+            | null
           engine_update?: string | null
           engine_version?: string | null
           file_path?: string | null
+          hids_findings?: Json | null
           id?: string
           metadata?: Json | null
           result_details?: Json | null
           rule_name: string
           scan_id?: string | null
           severity?: string | null
+          snort_alerts?: Json | null
         }
         Update: {
           category?: string | null
           created_at?: string | null
           description?: string | null
           detection_details?: string[] | null
+          droidbox_analysis?: Json | null
           engine_name?: string | null
+          engine_type?:
+            | Database["public"]["Enums"]["detection_engine_type"]
+            | null
           engine_update?: string | null
           engine_version?: string | null
           file_path?: string | null
+          hids_findings?: Json | null
           id?: string
           metadata?: Json | null
           result_details?: Json | null
           rule_name?: string
           scan_id?: string | null
           severity?: string | null
+          snort_alerts?: Json | null
         }
         Relationships: [
           {
@@ -192,6 +251,12 @@ export type Database = {
         | "obfuscation"
         | "document"
         | "cryptographic"
+      detection_engine_type:
+        | "snort"
+        | "yaralyze"
+        | "hids"
+        | "droidbox"
+        | "androguard"
     }
     CompositeTypes: {
       [_ in never]: never

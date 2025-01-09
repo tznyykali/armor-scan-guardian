@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Info, Shield } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye, Info, Shield, Activity, Bug, Cpu } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -33,18 +33,36 @@ interface ScanResultCardProps {
 const ScanResultCard = ({ result }: ScanResultCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [yaraResults, setYaraResults] = useState<any[]>([]);
+  const [mlResults, setMlResults] = useState<any[]>([]);
+  const [engineResults, setEngineResults] = useState<any[]>([]);
 
   const toggleExpand = async () => {
     setIsExpanded(!isExpanded);
-    if (!isExpanded && yaraResults.length === 0) {
+    if (!isExpanded) {
       try {
-        const { data } = await supabase
+        // Fetch YARA results
+        const { data: yaraData } = await supabase
           .from('advanced_scan_results')
           .select('*')
           .eq('scan_id', result.id);
-        if (data) setYaraResults(data);
+        
+        // Fetch ML model results
+        const { data: mlData } = await supabase
+          .from('ml_scan_results')
+          .select('*')
+          .eq('scan_id', result.id);
+        
+        // Fetch engine-specific results
+        const { data: engineData } = await supabase
+          .from('scan_results')
+          .select('*')
+          .eq('scan_id', result.id);
+        
+        if (yaraData) setYaraResults(yaraData);
+        if (mlData) setMlResults(mlData);
+        if (engineData) setEngineResults(engineData);
       } catch (error) {
-        console.error('Error fetching YARA results:', error);
+        console.error('Error fetching detailed results:', error);
       }
     }
   };
@@ -105,10 +123,90 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
               </div>
             )}
             
+            {engineResults.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Engine Analysis Results
+                </h4>
+                <div className="space-y-3">
+                  {engineResults.map((engine, index) => (
+                    <div
+                      key={index}
+                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-semibold text-sm">{engine.engine_name}</h5>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Type: {engine.engine_type}
+                          </p>
+                        </div>
+                      </div>
+                      {engine.snort_alerts && engine.snort_alerts.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium">Snort Alerts:</p>
+                          <ul className="text-sm text-muted-foreground">
+                            {engine.snort_alerts.map((alert: string, i: number) => (
+                              <li key={i}>{alert}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {engine.hids_findings && Object.keys(engine.hids_findings).length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium">HIDS Findings:</p>
+                          <pre className="text-xs bg-midnight-DEFAULT/10 p-2 rounded mt-1 overflow-x-auto">
+                            {JSON.stringify(engine.hids_findings, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {mlResults.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <Cpu className="h-4 w-4" />
+                  Machine Learning Analysis
+                </h4>
+                <div className="space-y-3">
+                  {mlResults.map((ml, index) => (
+                    <div
+                      key={index}
+                      className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="font-semibold text-sm">{ml.model_name}</h5>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Detection Type: {ml.detection_type}
+                          </p>
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded-full bg-forest-DEFAULT/10 text-forest-DEFAULT">
+                          {(ml.confidence_score * 100).toFixed(1)}% confidence
+                        </span>
+                      </div>
+                      {ml.analysis_metadata && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">
+                            Model Version: {ml.model_version || 'N/A'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {yaraResults.length > 0 && (
               <div className="mt-6">
                 <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
+                  <Bug className="h-4 w-4" />
                   YARA Analysis Results
                 </h4>
                 <div className="space-y-3">
@@ -124,11 +222,8 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
                             Category: {yara.category}
                           </p>
                         </div>
-                        <span className="text-xs px-2 py-1 rounded-full bg-forest-DEFAULT/10 text-forest-DEFAULT">
-                          {yara.detection_details.severity || 'medium'}
-                        </span>
                       </div>
-                      {yara.detection_details.description && (
+                      {yara.detection_details && (
                         <p className="text-sm mt-2 text-muted-foreground">
                           {yara.detection_details.description}
                         </p>
