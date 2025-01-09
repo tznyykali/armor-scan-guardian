@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -54,14 +53,17 @@ serve(async (req) => {
     }
 
     const analysisData = await uploadResponse.json();
+    console.log('File uploaded, analysis ID:', analysisData.data.id);
 
-    console.log('Polling for analysis results...');
     const analysisId = analysisData.data.id;
-    let results;
+    let results = null;
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 30; // Increased from 10 to 30
+    const delayBetweenAttempts = 5000; // 5 seconds between attempts
 
     while (attempts < maxAttempts) {
+      console.log(`Polling attempt ${attempts + 1}/${maxAttempts}...`);
+      
       const analysisResponse = await fetch(
         `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
         {
@@ -76,9 +78,9 @@ serve(async (req) => {
       }
 
       const data = await analysisResponse.json();
+      console.log('Analysis status:', data.data.attributes.status);
       
       if (data.data.attributes.status === 'completed') {
-        // Enhanced file information and analysis results
         results = {
           status: data.data.attributes.status,
           stats: data.data.attributes.stats || {
@@ -123,14 +125,17 @@ serve(async (req) => {
             })),
         };
         break;
+      } else if (data.data.attributes.status === 'queued' || data.data.attributes.status === 'in-progress') {
+        // Wait before next attempt
+        await new Promise(resolve => setTimeout(resolve, delayBetweenAttempts));
+        attempts++;
+      } else {
+        throw new Error(`Analysis failed with status: ${data.data.attributes.status}`);
       }
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
     }
 
     if (!results) {
-      throw new Error('Analysis timed out');
+      throw new Error('Analysis timed out after maximum attempts');
     }
 
     console.log('Analysis complete, returning results');
@@ -147,7 +152,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in scan-file function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error instanceof Error ? error.stack : undefined 
+      }),
       { 
         status: 400,
         headers: { 
