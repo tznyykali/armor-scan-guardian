@@ -184,7 +184,7 @@ export type Database = {
           id: string
           metadata: Json | null
           result_details: Json | null
-          rule_name: string
+          rule_name: string | null
           scan_id: string | null
           severity: string | null
           snort_alerts: Json | null
@@ -206,7 +206,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           result_details?: Json | null
-          rule_name: string
+          rule_name?: string | null
           scan_id?: string | null
           severity?: string | null
           snort_alerts?: Json | null
@@ -228,7 +228,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           result_details?: Json | null
-          rule_name?: string
+          rule_name?: string | null
           scan_id?: string | null
           severity?: string | null
           snort_alerts?: Json | null

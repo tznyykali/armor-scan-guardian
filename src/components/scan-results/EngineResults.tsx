@@ -28,9 +28,11 @@ const EngineResults = ({ results }: EngineResultsProps) => {
             <div className="flex justify-between items-start">
               <div>
                 <h5 className="font-semibold text-sm">{engine.engine_name}</h5>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Type: {engine.engine_type}
-                </p>
+                {engine.engine_type && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Type: {engine.engine_type}
+                  </p>
+                )}
               </div>
             </div>
             {engine.snort_alerts && engine.snort_alerts.length > 0 && (
