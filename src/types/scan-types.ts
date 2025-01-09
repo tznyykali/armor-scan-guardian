@@ -19,12 +19,54 @@ export interface MLAnalysis {
   [key: string]: string | number | string[] | undefined; // Add index signature for Json compatibility
 }
 
-export interface ScanMetadata {
-  file_info?: {
-    name: string;
-    size: number;
-    type: string;
+export interface FileInfo {
+  name: string;
+  size: number;
+  type: string;
+  last_modified: string;
+  mime_type: string;
+  extension?: string;
+  apk_metadata?: {
+    package_name: string;
+    version_code: string;
+    min_sdk_version: number;
+    target_sdk_version: number;
+    permissions: string[];
+    activities: string[];
+    services: string[];
+    receivers: string[];
+    native_libraries: string[];
+  } | null;
+}
+
+export interface UrlInfo {
+  domain: string;
+  protocol: string;
+  path: string;
+  query_parameters: string;
+  ssl_certificate: {
+    issuer: string;
+    valid_from: string;
+    valid_to: string;
+    version: string;
   };
+  headers: {
+    server: string;
+    content_type: string;
+    x_frame_options: string;
+    content_security_policy: string;
+  };
+  whois_data: {
+    registrar: string;
+    creation_date: string;
+    expiration_date: string;
+    last_updated: string;
+  };
+}
+
+export interface ScanMetadata {
+  file_info?: FileInfo;
+  url_info?: UrlInfo;
   engines_used: number;
   analysis_date: string;
   categories: Record<string, string>;
