@@ -34,15 +34,6 @@ const Index = () => {
             Advanced ML-powered Android security and performance analysis system
           </p>
           
-          <div className="text-lg text-taupe dark:text-beige font-mono max-w-2xl space-y-4">
-            <p>
-              Secure Scan combines cutting-edge machine learning with comprehensive security analysis to protect Android devices from emerging threats. Our system performs real-time malware detection, system optimization, and vulnerability assessments using advanced neural networks and behavioral analysis.
-            </p>
-            <p>
-              Whether you're scanning suspicious files or optimizing system performance, our ML models provide accurate threat detection and personalized recommendations for maintaining your device's security and efficiency.
-            </p>
-          </div>
-          
           <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
             <div className="relative overflow-hidden rounded-xl border border-sage-dark/20 bg-sage/50 dark:bg-taupe/50 backdrop-blur-sm transition-all hover:shadow-lg">
               <div className="p-6">
