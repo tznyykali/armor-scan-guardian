@@ -124,10 +124,12 @@ export type Database = {
       scan_history: {
         Row: {
           analysis_date: string | null
+          file_metadata: Json | null
           file_name: string
           file_size: number | null
           file_type: string | null
           id: string
+          malware_classification: string[] | null
           permalink: string | null
           scan_status: string
           scan_timestamp: string | null
@@ -138,10 +140,12 @@ export type Database = {
         }
         Insert: {
           analysis_date?: string | null
+          file_metadata?: Json | null
           file_name: string
           file_size?: number | null
           file_type?: string | null
           id?: string
+          malware_classification?: string[] | null
           permalink?: string | null
           scan_status: string
           scan_timestamp?: string | null
@@ -152,10 +156,12 @@ export type Database = {
         }
         Update: {
           analysis_date?: string | null
+          file_metadata?: Json | null
           file_name?: string
           file_size?: number | null
           file_type?: string | null
           id?: string
+          malware_classification?: string[] | null
           permalink?: string | null
           scan_status?: string
           scan_timestamp?: string | null
@@ -180,8 +186,10 @@ export type Database = {
           engine_update: string | null
           engine_version: string | null
           file_path: string | null
+          hash_identifiers: Json | null
           hids_findings: Json | null
           id: string
+          malware_type: string | null
           metadata: Json | null
           result_details: Json | null
           rule_name: string | null
@@ -202,8 +210,10 @@ export type Database = {
           engine_update?: string | null
           engine_version?: string | null
           file_path?: string | null
+          hash_identifiers?: Json | null
           hids_findings?: Json | null
           id?: string
+          malware_type?: string | null
           metadata?: Json | null
           result_details?: Json | null
           rule_name?: string | null
@@ -224,8 +234,10 @@ export type Database = {
           engine_update?: string | null
           engine_version?: string | null
           file_path?: string | null
+          hash_identifiers?: Json | null
           hids_findings?: Json | null
           id?: string
+          malware_type?: string | null
           metadata?: Json | null
           result_details?: Json | null
           rule_name?: string | null
