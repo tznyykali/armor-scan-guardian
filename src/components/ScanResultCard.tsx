@@ -8,13 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import ScanStats from './scan-results/ScanStats';
-import EngineResults from './scan-results/EngineResults';
-import MLResults from './scan-results/MLResults';
-import YaraResults from './scan-results/YaraResults';
 import FileMetadata from './scan-results/FileMetadata';
 import ThreatClassification from './scan-results/ThreatClassification';
-import AdditionalDetails from './scan-results/AdditionalDetails';
 
 interface ScanResultCardProps {
   result: {
@@ -24,12 +19,6 @@ interface ScanResultCardProps {
     timestamp: string;
     results: {
       status: string;
-      stats?: {
-        harmless: number;
-        malicious: number;
-        suspicious: number;
-        undetected: number;
-      };
       metadata?: any;
       file_path?: string;
       detection_details?: string[];
@@ -39,42 +28,18 @@ interface ScanResultCardProps {
 
 const ScanResultCard = ({ result }: ScanResultCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [yaraResults, setYaraResults] = useState<any[]>([]);
-  const [mlResults, setMlResults] = useState<any[]>([]);
-  const [engineResults, setEngineResults] = useState<any[]>([]);
   const [scanDetails, setScanDetails] = useState<any>(null);
 
   const toggleExpand = async () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       try {
-        const [yaraData, mlData, engineData, scanHistoryData] = await Promise.all([
-          supabase
-            .from('advanced_scan_results')
-            .select('*')
-            .eq('scan_id', result.id)
-            .then(({ data }) => data || []),
-          supabase
-            .from('ml_scan_results')
-            .select('*')
-            .eq('scan_id', result.id)
-            .then(({ data }) => data || []),
-          supabase
-            .from('scan_results')
-            .select('*')
-            .eq('scan_id', result.id)
-            .then(({ data }) => data || []),
-          supabase
-            .from('scan_history')
-            .select('file_metadata, malware_classification')
-            .eq('id', result.id)
-            .single()
-            .then(({ data }) => data)
-        ]);
+        const { data: scanHistoryData } = await supabase
+          .from('scan_history')
+          .select('file_metadata, malware_classification')
+          .eq('id', result.id)
+          .single();
         
-        setYaraResults(yaraData);
-        setMlResults(mlData);
-        setEngineResults(engineData);
         setScanDetails(scanHistoryData);
       } catch (error) {
         console.error('Error fetching detailed results:', error);
@@ -109,10 +74,6 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
       {isExpanded && (
         <CardContent>
           <div className="space-y-4">
-            {result.results.stats && (
-              <ScanStats stats={result.results.stats} />
-            )}
-            
             {scanDetails?.malware_classification && (
               <ThreatClassification classifications={scanDetails.malware_classification} />
             )}
@@ -120,16 +81,6 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
             {scanDetails?.file_metadata && (
               <FileMetadata metadata={scanDetails.file_metadata} />
             )}
-            
-            <EngineResults results={engineResults} />
-            <MLResults results={mlResults} />
-            <YaraResults results={yaraResults} />
-
-            <AdditionalDetails
-              metadata={result.results.metadata}
-              detectionDetails={result.results.detection_details}
-              filePath={result.results.file_path}
-            />
           </div>
         </CardContent>
       )}
