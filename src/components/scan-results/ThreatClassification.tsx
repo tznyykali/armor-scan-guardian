@@ -11,11 +11,14 @@ const ThreatClassification = ({ classifications }: ThreatClassificationProps) =>
   
   const colorMap: Record<string, string> = {
     'Trojan': 'bg-red-500',
-    'Spyware': 'bg-yellow-500',
-    'Ransomware': 'bg-purple-500',
-    'RAT': 'bg-orange-500',
-    'Phishing': 'bg-blue-500',
+    'Virus': 'bg-purple-500',
+    'Worm': 'bg-orange-500',
+    'Ransomware': 'bg-yellow-500',
+    'Spyware': 'bg-blue-500',
     'Adware': 'bg-green-500',
+    'RAT': 'bg-pink-500',
+    'Backdoor': 'bg-indigo-500',
+    'Rootkit': 'bg-cyan-500'
   };
 
   return (

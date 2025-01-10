@@ -1,13 +1,31 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function calculateFileHashes(fileArrayBuffer: ArrayBuffer) {
+  const md5Hash = await crypto.subtle.digest('MD5', fileArrayBuffer);
+  const sha1Hash = await crypto.subtle.digest('SHA-1', fileArrayBuffer);
+  const sha256Hash = await crypto.subtle.digest('SHA-256', fileArrayBuffer);
+
+  // Convert hash buffers to hex strings
+  const toHexString = (buffer: ArrayBuffer) => 
+    Array.from(new Uint8Array(buffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+  return {
+    md5: toHexString(md5Hash),
+    sha1: toHexString(sha1Hash),
+    sha256: toHexString(sha256Hash)
+  };
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -17,17 +35,19 @@ serve(async (req) => {
     const formData = await req.formData();
     const file = formData.get('file');
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       throw new Error('No file provided');
     }
 
-    // Initialize Supabase client
+    // Calculate file hashes
+    const fileBuffer = await file.arrayBuffer();
+    const hashes = await calculateFileHashes(fileBuffer);
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get VirusTotal API key from Supabase secrets
     const apiKey = Deno.env.get('VIRUSTOTAL_API_KEY');
     if (!apiKey) {
       throw new Error('VirusTotal API key not configured');
@@ -46,7 +66,6 @@ serve(async (req) => {
 
     const { data: uploadUrl } = await urlResponse.json();
 
-    // Upload file to VirusTotal
     console.log('Uploading file to VirusTotal...');
     const vtFormData = new FormData();
     vtFormData.append('file', file);
@@ -68,7 +87,6 @@ serve(async (req) => {
 
     console.log('File uploaded, analysis ID:', analysisId);
 
-    // Poll for analysis results
     let results = null;
     let attempts = 0;
     const maxAttempts = 30;
@@ -93,6 +111,21 @@ serve(async (req) => {
       const data = await analysisResponse.json();
       
       if (data.data.attributes.status === 'completed') {
+        // Extract malware classifications from results
+        const malwareTypes = new Set<string>();
+        Object.values(data.data.attributes.results || {}).forEach((result: any) => {
+          if (result.category === 'malicious' && result.result) {
+            // Common malware type patterns
+            const types = ['Trojan', 'Virus', 'Worm', 'Ransomware', 'Spyware', 'Adware', 'RAT', 'Backdoor', 'Rootkit'];
+            const resultLower = result.result.toLowerCase();
+            types.forEach(type => {
+              if (resultLower.includes(type.toLowerCase())) {
+                malwareTypes.add(type);
+              }
+            });
+          }
+        });
+
         results = {
           status: data.data.attributes.status,
           stats: data.data.attributes.stats || {
@@ -120,6 +153,10 @@ serve(async (req) => {
             .map(([engine, result]: [string, any]) => 
               `${engine}: ${result.result} (${result.method || 'unknown method'})`
             ),
+          file_metadata: {
+            ...hashes
+          },
+          malware_classification: Array.from(malwareTypes)
         };
         break;
       } else if (data.data.attributes.status === 'queued' || data.data.attributes.status === 'in-progress') {
