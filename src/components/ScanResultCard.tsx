@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Eye, Info, Shield, Hash } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -7,12 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import ScanStats from './scan-results/ScanStats';
 import EngineResults from './scan-results/EngineResults';
 import MLResults from './scan-results/MLResults';
 import YaraResults from './scan-results/YaraResults';
+import FileMetadata from './scan-results/FileMetadata';
+import ThreatClassification from './scan-results/ThreatClassification';
+import AdditionalDetails from './scan-results/AdditionalDetails';
 
 interface ScanResultCardProps {
   result: {
@@ -80,69 +82,6 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
     }
   };
 
-  const renderMalwareClassification = (classifications: string[]) => {
-    if (!classifications || classifications.length === 0) return null;
-    
-    const colorMap: Record<string, string> = {
-      'Trojan': 'bg-red-500',
-      'Spyware': 'bg-yellow-500',
-      'Ransomware': 'bg-purple-500',
-      'RAT': 'bg-orange-500',
-      'Phishing': 'bg-blue-500',
-      'Adware': 'bg-green-500',
-    };
-
-    return (
-      <div className="mt-4">
-        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          Threat Classification
-        </h4>
-        <div className="flex flex-wrap gap-2">
-          {classifications.map((type, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className={`${colorMap[type] || 'bg-gray-500'} text-white`}
-            >
-              {type}
-            </Badge>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderFileMetadata = (metadata: any) => {
-    if (!metadata) return null;
-
-    return (
-      <div className="mt-4">
-        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-          <Hash className="h-4 w-4" />
-          File Hashes
-        </h4>
-        <div className="space-y-2 bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg">
-          {metadata.md5 && (
-            <p className="text-sm">
-              <span className="font-semibold">MD5:</span> {metadata.md5}
-            </p>
-          )}
-          {metadata.sha1 && (
-            <p className="text-sm">
-              <span className="font-semibold">SHA1:</span> {metadata.sha1}
-            </p>
-          )}
-          {metadata.sha256 && (
-            <p className="text-sm">
-              <span className="font-semibold">SHA256:</span> {metadata.sha256}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Card className="w-full mb-4 bg-mist-light/50 dark:bg-midnight-DEFAULT/50 backdrop-blur-lg">
       <CardHeader className="cursor-pointer" onClick={toggleExpand}>
@@ -174,59 +113,23 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
               <ScanStats stats={result.results.stats} />
             )}
             
-            {scanDetails?.malware_classification && 
-              renderMalwareClassification(scanDetails.malware_classification)
-            }
+            {scanDetails?.malware_classification && (
+              <ThreatClassification classifications={scanDetails.malware_classification} />
+            )}
             
-            {scanDetails?.file_metadata && 
-              renderFileMetadata(scanDetails.file_metadata)
-            }
+            {scanDetails?.file_metadata && (
+              <FileMetadata metadata={scanDetails.file_metadata} />
+            )}
             
             <EngineResults results={engineResults} />
             <MLResults results={mlResults} />
             <YaraResults results={yaraResults} />
 
-            {result.results.metadata && (
-              <div className="mt-4">
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Info className="h-4 w-4" />
-                  Additional Details
-                </h4>
-                <div className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg">
-                  <pre className="text-sm overflow-x-auto">
-                    {JSON.stringify(result.results.metadata, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            )}
-
-            {result.results.detection_details && result.results.detection_details.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Detection Details
-                </h4>
-                <ul className="space-y-2">
-                  {result.results.detection_details.map((detail, index) => (
-                    <li
-                      key={index}
-                      className="bg-white/50 dark:bg-midnight-light/50 p-3 rounded-lg text-sm"
-                    >
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {result.results.file_path && (
-              <div className="mt-4">
-                <h4 className="text-sm font-semibold mb-2">File Location</h4>
-                <p className="text-sm bg-white/50 dark:bg-midnight-light/50 p-3 rounded-lg">
-                  {result.results.file_path}
-                </p>
-              </div>
-            )}
+            <AdditionalDetails
+              metadata={result.results.metadata}
+              detectionDetails={result.results.detection_details}
+              filePath={result.results.file_path}
+            />
           </div>
         </CardContent>
       )}
