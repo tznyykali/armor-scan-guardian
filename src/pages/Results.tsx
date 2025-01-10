@@ -60,7 +60,6 @@ const Results = () => {
                 timestamp: result.scan_timestamp,
                 results: {
                   status: result.scan_status,
-                  stats: result.stats,
                   metadata: {
                     engines_used: result.total_engines,
                     analysis_date: result.analysis_date,
