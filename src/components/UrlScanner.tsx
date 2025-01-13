@@ -3,13 +3,15 @@ import { Link as LinkIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { scanUrl } from '@/services/virusTotalService';
 import { saveScanResult } from '@/services/scanHistoryService';
-import { useNavigate } from 'react-router-dom';
 
-const UrlScanner = () => {
+interface UrlScannerProps {
+  onScanComplete?: () => void;
+}
+
+const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
   const [urlInput, setUrlInput] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleUrlScan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,8 @@ const UrlScanner = () => {
         description: "URL has been successfully scanned",
       });
 
-      navigate('/results');
+      onScanComplete?.();
+      setUrlInput('');
     } catch (error) {
       console.error('Scan error:', error);
       toast({

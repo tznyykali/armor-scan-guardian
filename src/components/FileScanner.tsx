@@ -3,12 +3,14 @@ import { Upload, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { scanFile } from '@/services/virusTotalService';
 import { saveScanResult } from '@/services/scanHistoryService';
-import { useNavigate } from 'react-router-dom';
 
-const FileScanner = () => {
+interface FileScannerProps {
+  onScanComplete?: () => void;
+}
+
+const FileScanner = ({ onScanComplete }: FileScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleFileDrop = async (e: React.DragEvent) => {
     e.preventDefault();
@@ -36,7 +38,7 @@ const FileScanner = () => {
         description: "File has been successfully scanned",
       });
 
-      navigate('/results');
+      onScanComplete?.();
     } catch (error) {
       console.error('Scan error:', error);
       toast({
