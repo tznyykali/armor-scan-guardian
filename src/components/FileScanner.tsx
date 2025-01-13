@@ -35,7 +35,7 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         timestamp: new Date().toISOString(),
         results: {
           status: results.status,
-          metadata: results.file_metadata,
+          metadata: results.metadata,
           file_metadata: results.file_metadata,
           malware_classification: results.malware_classification || []
         }
