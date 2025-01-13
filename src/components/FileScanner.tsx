@@ -36,7 +36,7 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         results: {
           status: results.status,
           metadata: results.metadata,
-          file_metadata: results.file_metadata,
+          file_metadata: results.metadata,
           malware_classification: results.malware_classification || []
         }
       };
