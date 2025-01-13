@@ -5,11 +5,22 @@ export interface ScanResult {
   timestamp: string;
   results: {
     status: string;
-    stats?: {
-      harmless: number;
-      malicious: number;
-      suspicious: number;
-      undetected: number;
+    metadata?: any;
+    malware_classification?: string[];
+    file_metadata?: {
+      md5?: string;
+      sha1?: string;
+      sha256?: string;
+      [key: string]: any;
+    };
+    data?: {
+      attributes?: {
+        status?: string;
+        metadata?: any;
+        categories?: {
+          malware?: boolean;
+        };
+      };
     };
     [key: string]: any;
   };

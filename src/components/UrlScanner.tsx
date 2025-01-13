@@ -37,9 +37,10 @@ const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
         target: urlInput,
         timestamp: new Date().toISOString(),
         results: {
-          status: results.data.attributes.status,
-          metadata: results.data.attributes.metadata,
-          malware_classification: results.data.attributes.categories?.malware ? ['Malware'] : []
+          status: results.status,
+          metadata: results.metadata,
+          malware_classification: results.data?.attributes?.categories?.malware ? ['Malware'] : [],
+          data: results.data
         }
       };
 
