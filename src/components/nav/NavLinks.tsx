@@ -15,7 +15,6 @@ const NavLinks = ({ onItemClick }: NavLinksProps) => {
     { path: "/", label: "Homepage" },
     { path: "/optimize", label: "Optimize" },
     { path: "/scan", label: "Scan" },
-    { path: "/results", label: "Results" },
   ];
 
   return (
