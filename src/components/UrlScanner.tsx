@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link as LinkIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { scanUrl } from '@/services/virusTotalService';
-import { saveScanResult } from '@/services/scanHistoryService';
+import { ScanResult } from '@/types/scan';
 
 interface UrlScannerProps {
-  onScanComplete?: () => void;
+  onScanComplete?: (result: ScanResult) => void;
 }
 
 const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
@@ -31,17 +31,24 @@ const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
         throw new Error('No scan results received');
       }
 
-      const savedResult = await saveScanResult('url', urlInput, results);
-      if (!savedResult) {
-        throw new Error('Failed to save scan results');
-      }
+      const scanResult: ScanResult = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        target: urlInput,
+        timestamp: new Date().toISOString(),
+        results: {
+          status: results.data.attributes.status,
+          metadata: results.data.attributes.metadata,
+          malware_classification: results.data.attributes.categories?.malware ? ['Malware'] : []
+        }
+      };
 
+      onScanComplete?.(scanResult);
       toast({
         title: "Scan Complete",
         description: "URL has been successfully scanned",
       });
 
-      onScanComplete?.();
       setUrlInput('');
     } catch (error) {
       console.error('Scan error:', error);
