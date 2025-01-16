@@ -9,6 +9,11 @@ import {
 } from "@/components/ui/card";
 import FileMetadata from './scan-results/FileMetadata';
 import ThreatClassification from './scan-results/ThreatClassification';
+import MLResults from './scan-results/MLResults';
+import YaraResults from './scan-results/YaraResults';
+import EngineResults from './scan-results/EngineResults';
+import ScanStats from './scan-results/ScanStats';
+import AdditionalDetails from './scan-results/AdditionalDetails';
 
 interface ScanResultCardProps {
   result: {
@@ -20,6 +25,39 @@ interface ScanResultCardProps {
       status: string;
       metadata?: any;
       malware_classification?: string[];
+      ml_results?: Array<{
+        model_name: string;
+        detection_type: string;
+        confidence_score: number;
+        model_version?: string;
+        analysis_metadata?: any;
+      }>;
+      yara_matches?: Array<{
+        rule_match: string;
+        category: string;
+        detection_details?: {
+          description: string;
+        };
+      }>;
+      engine_results?: Array<{
+        engine_name: string;
+        engine_type: string;
+        malware_type?: string;
+        snort_alerts?: any[];
+        hids_findings?: Record<string, any>;
+        engine_version?: string;
+        engine_update?: string;
+        category?: string;
+        description?: string;
+      }>;
+      scan_stats?: {
+        harmless: number;
+        malicious: number;
+        suspicious: number;
+        undetected: number;
+      };
+      detection_details?: string[];
+      file_path?: string;
     };
   };
 }
@@ -53,14 +91,43 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
       </CardHeader>
       {isExpanded && (
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Scan Statistics */}
+            {result.results.scan_stats && (
+              <ScanStats stats={result.results.scan_stats} />
+            )}
+            
+            {/* File Metadata */}
             {result.results.metadata && (
               <FileMetadata metadata={result.results.metadata} />
             )}
             
+            {/* Threat Classification */}
             {result.results.malware_classification && (
               <ThreatClassification classifications={result.results.malware_classification} />
             )}
+            
+            {/* ML Analysis Results */}
+            {result.results.ml_results && result.results.ml_results.length > 0 && (
+              <MLResults results={result.results.ml_results} />
+            )}
+            
+            {/* YARA Analysis Results */}
+            {result.results.yara_matches && result.results.yara_matches.length > 0 && (
+              <YaraResults results={result.results.yara_matches} />
+            )}
+            
+            {/* Engine Analysis Results */}
+            {result.results.engine_results && result.results.engine_results.length > 0 && (
+              <EngineResults results={result.results.engine_results} />
+            )}
+            
+            {/* Additional Details */}
+            <AdditionalDetails
+              metadata={result.results.metadata}
+              detectionDetails={result.results.detection_details}
+              filePath={result.results.file_path}
+            />
           </div>
         </CardContent>
       )}
