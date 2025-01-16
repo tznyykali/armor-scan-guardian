@@ -93,4 +93,14 @@ export interface ScanResult {
   detection_details: DetectionDetail[];
   file_path?: string;
   permalink?: string;
+  malware_classification?: string[];
+  data?: {
+    attributes?: {
+      status?: string;
+      metadata?: any;
+      categories?: {
+        malware?: boolean;
+      };
+    };
+  };
 }
