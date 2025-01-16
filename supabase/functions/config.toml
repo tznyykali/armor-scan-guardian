@@ -13,6 +13,5 @@ enabled = true
 port = 54323
 
 [[functions]]
-name = "scan-file"
-[functions.verify_jwt]
-enabled = false
+[functions.scan-file]
+verify_jwt = false
