@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link as LinkIcon, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { scanUrl } from '@/services/virusTotalService';
 import { ScanResult } from '@/types/scan';
+import { useScan } from '@/hooks/useScan';
 
 interface UrlScannerProps {
   onScanComplete?: (result: ScanResult) => void;
@@ -10,17 +10,12 @@ interface UrlScannerProps {
 
 const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
   const [urlInput, setUrlInput] = useState('');
-  const [isScanning, setIsScanning] = useState(false);
-  const { toast } = useToast();
+  const { isScanning, setIsScanning, handleScanComplete, handleScanFailure } = useScan({ onScanComplete });
 
   const handleUrlScan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!urlInput) {
-      toast({
-        title: "Error",
-        description: "Please enter a URL to scan",
-        variant: "destructive",
-      });
+      handleScanFailure(new Error('Please enter a URL to scan'));
       return;
     }
 
@@ -31,32 +26,10 @@ const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
         throw new Error('No scan results received');
       }
 
-      const scanResult: ScanResult = {
-        id: crypto.randomUUID(),
-        type: 'url',
-        target: urlInput,
-        timestamp: new Date().toISOString(),
-        results: {
-          status: results.status,
-          metadata: results.metadata,
-          malware_classification: results.malware_classification || []
-        }
-      };
-
-      onScanComplete?.(scanResult);
-      toast({
-        title: "Scan Complete",
-        description: "URL has been successfully scanned",
-      });
-
+      handleScanComplete('url', urlInput, results);
       setUrlInput('');
     } catch (error) {
-      console.error('Scan error:', error);
-      toast({
-        title: "Scan Error",
-        description: error instanceof Error ? error.message : "Failed to scan URL",
-        variant: "destructive",
-      });
+      handleScanFailure(error);
     } finally {
       setIsScanning(false);
     }

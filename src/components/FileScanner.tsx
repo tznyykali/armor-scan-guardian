@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Upload, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { scanFile } from '@/services/virusTotalService';
 import { ScanResult } from '@/types/scan';
+import { useScan } from '@/hooks/useScan';
 
 interface FileScannerProps {
   onScanComplete?: (result: ScanResult) => void;
 }
 
 const FileScanner = ({ onScanComplete }: FileScannerProps) => {
-  const [isScanning, setIsScanning] = useState(false);
-  const { toast } = useToast();
+  const { isScanning, setIsScanning, handleScanComplete, handleScanFailure } = useScan({ onScanComplete });
 
   const handleFileDrop = async (e: React.DragEvent) => {
     e.preventDefault();
@@ -27,32 +26,9 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
       if (!results) {
         throw new Error('No scan results received');
       }
-
-      const scanResult: ScanResult = {
-        id: crypto.randomUUID(),
-        type: 'file',
-        target: file.name,
-        timestamp: new Date().toISOString(),
-        results: {
-          status: results.results?.status || 'completed',
-          metadata: results.results?.metadata || {},
-          file_metadata: results.results?.file_metadata || {},
-          malware_classification: results.results?.malware_classification || []
-        }
-      };
-
-      onScanComplete?.(scanResult);
-      toast({
-        title: "Scan Complete",
-        description: "File has been successfully scanned",
-      });
+      handleScanComplete('file', file.name, results);
     } catch (error) {
-      console.error('Scan error:', error);
-      toast({
-        title: "Scan Error",
-        description: error instanceof Error ? error.message : "Failed to scan file",
-        variant: "destructive",
-      });
+      handleScanFailure(error);
     } finally {
       setIsScanning(false);
     }
