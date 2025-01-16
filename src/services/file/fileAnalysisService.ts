@@ -9,12 +9,9 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Call the scan-file edge function with proper headers
+    // Call the scan-file edge function
     const { data, error } = await supabase.functions.invoke('scan-file', {
       body: formData,
-      headers: {
-        'Accept': 'application/json',
-      },
     });
 
     if (error) {
@@ -51,6 +48,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw saveError;
     }
 
+    // Return the scan result in the correct format
     return {
       id: crypto.randomUUID(),
       type: 'file',
