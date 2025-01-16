@@ -6,6 +6,12 @@ export interface ScanResult {
   results: {
     status: string;
     metadata?: any;
+    file_metadata?: {
+      md5?: string;
+      sha1?: string;
+      sha256?: string;
+      [key: string]: any;
+    };
     malware_classification?: string[];
     data?: {
       attributes?: {

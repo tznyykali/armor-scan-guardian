@@ -7,7 +7,6 @@ import NavBar from "./components/NavBar";
 import Index from "./pages/Index";
 import Optimize from "./pages/Optimize";
 import Scan from "./pages/Scan";
-import Results from "./pages/Results";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -26,7 +25,6 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/optimize" element={<Optimize />} />
                 <Route path="/scan" element={<Scan />} />
-                <Route path="/results" element={<Results />} />
               </Routes>
             </BrowserRouter>
           </div>

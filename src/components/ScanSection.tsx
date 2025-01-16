@@ -19,7 +19,7 @@ const ScanSection = () => {
       </div>
       
       {currentScanResult && (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <h3 className="text-xl font-mono text-rust dark:text-rust-light">
             Scan Results_
           </h3>
