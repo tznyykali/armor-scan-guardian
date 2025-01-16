@@ -34,15 +34,49 @@ export type Database = {
           rule_match?: string
           scan_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "advanced_scan_results_scan_id_fkey"
-            columns: ["scan_id"]
-            isOneToOne: false
-            referencedRelation: "scan_history"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      current_scan_results: {
+        Row: {
+          file_metadata: Json | null
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          md5_hash: string | null
+          scan_timestamp: string | null
+          sha1_hash: string | null
+          sha256_hash: string | null
+          threat_category: string | null
+          yara_matches: Json | null
+        }
+        Insert: {
+          file_metadata?: Json | null
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          md5_hash?: string | null
+          scan_timestamp?: string | null
+          sha1_hash?: string | null
+          sha256_hash?: string | null
+          threat_category?: string | null
+          yara_matches?: Json | null
+        }
+        Update: {
+          file_metadata?: Json | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          md5_hash?: string | null
+          scan_timestamp?: string | null
+          sha1_hash?: string | null
+          sha256_hash?: string | null
+          threat_category?: string | null
+          yara_matches?: Json | null
+        }
+        Relationships: []
       }
       ml_model_metadata: {
         Row: {
@@ -110,65 +144,6 @@ export type Database = {
           model_name?: string
           model_version?: string | null
           scan_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ml_scan_results_scan_id_fkey"
-            columns: ["scan_id"]
-            isOneToOne: false
-            referencedRelation: "scan_history"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      scan_history: {
-        Row: {
-          analysis_date: string | null
-          file_metadata: Json | null
-          file_name: string
-          file_size: number | null
-          file_type: string | null
-          id: string
-          malware_classification: string[] | null
-          permalink: string | null
-          scan_status: string
-          scan_timestamp: string | null
-          scan_type: string
-          stats: Json | null
-          total_engines: number | null
-          user_id: string | null
-        }
-        Insert: {
-          analysis_date?: string | null
-          file_metadata?: Json | null
-          file_name: string
-          file_size?: number | null
-          file_type?: string | null
-          id?: string
-          malware_classification?: string[] | null
-          permalink?: string | null
-          scan_status: string
-          scan_timestamp?: string | null
-          scan_type: string
-          stats?: Json | null
-          total_engines?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          analysis_date?: string | null
-          file_metadata?: Json | null
-          file_name?: string
-          file_size?: number | null
-          file_type?: string | null
-          id?: string
-          malware_classification?: string[] | null
-          permalink?: string | null
-          scan_status?: string
-          scan_timestamp?: string | null
-          scan_type?: string
-          stats?: Json | null
-          total_engines?: number | null
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -245,15 +220,7 @@ export type Database = {
           severity?: string | null
           snort_alerts?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "scan_results_scan_id_fkey"
-            columns: ["scan_id"]
-            isOneToOne: false
-            referencedRelation: "scan_history"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       system_metrics: {
         Row: {
