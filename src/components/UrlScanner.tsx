@@ -39,8 +39,7 @@ const UrlScanner = ({ onScanComplete }: UrlScannerProps) => {
         results: {
           status: results.status,
           metadata: results.metadata,
-          malware_classification: results.malware_classification || [],
-          data: results.data
+          malware_classification: results.malware_classification || []
         }
       };
 
