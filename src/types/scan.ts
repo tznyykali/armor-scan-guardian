@@ -13,14 +13,5 @@ export interface ScanResult {
       [key: string]: any;
     };
     malware_classification?: string[];
-    data?: {
-      attributes?: {
-        status?: string;
-        metadata?: any;
-        categories?: {
-          malware?: boolean;
-        };
-      };
-    };
   };
 }

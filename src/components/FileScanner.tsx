@@ -34,10 +34,10 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         target: file.name,
         timestamp: new Date().toISOString(),
         results: {
-          status: results.status,
-          metadata: results.metadata,
-          file_metadata: results.metadata,
-          malware_classification: results.malware_classification || []
+          status: results.results?.status || 'completed',
+          metadata: results.results?.metadata || {},
+          file_metadata: results.results?.file_metadata || {},
+          malware_classification: results.results?.malware_classification || []
         }
       };
 

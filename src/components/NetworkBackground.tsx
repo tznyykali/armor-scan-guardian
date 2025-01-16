@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from '@/integrations/supabase/types';
 
 interface ScanStats {
   malicious: number;
@@ -23,18 +22,16 @@ const NetworkBackground = () => {
     if (location.pathname === '/results') {
       const checkLatestScan = async () => {
         const { data, error } = await supabase
-          .from('scan_history')
-          .select('stats')
+          .from('current_scan_results')
+          .select('threat_category')
           .order('scan_timestamp', { ascending: false })
           .limit(1);
 
         if (!error && data && data.length > 0) {
-          // First cast to unknown, then to ScanStats to satisfy TypeScript
-          const stats = (data[0].stats as unknown) as ScanStats;
-          const maliciousCount = stats?.malicious || 0;
-          setIsMalicious(maliciousCount > 0);
+          const isMaliciousContent = data[0].threat_category === 'malware';
+          setIsMalicious(isMaliciousContent);
           // Increase animation speed if malicious content detected
-          animationSpeedRef.current = maliciousCount > 0 ? 2 : 0.5;
+          animationSpeedRef.current = isMaliciousContent ? 2 : 0.5;
         }
       };
 
