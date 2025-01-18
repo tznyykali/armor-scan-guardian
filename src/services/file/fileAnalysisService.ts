@@ -1,5 +1,6 @@
 import { ScanResult } from '@/types/scan';
 import { supabase } from '@/integrations/supabase/client';
+import { analyzeMobileApp } from '../mlAnalysisService';
 
 export async function scanFile(file: File): Promise<ScanResult> {
   console.log('Starting file scan with Supabase client...');
@@ -30,6 +31,15 @@ export async function scanFile(file: File): Promise<ScanResult> {
         ? 'ios'
         : 'desktop';
 
+    // Perform ML analysis if it's a mobile app
+    let mlResults = [];
+    if (platform === 'android' || platform === 'ios') {
+      mlResults = await analyzeMobileApp(file.type, {
+        app_permissions: data.app_permissions,
+        app_components: data.app_components
+      });
+    }
+
     // Save scan result to the current_scan_results table
     const { error: saveError } = await supabase
       .from('current_scan_results')
@@ -59,6 +69,30 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw saveError;
     }
 
+    // Save ML scan results if available
+    if (mlResults.length > 0) {
+      const { error: mlError } = await supabase
+        .from('ml_scan_results')
+        .insert(
+          mlResults.map(result => ({
+            model_name: result.modelName,
+            confidence_score: result.confidence,
+            detection_type: result.detectionType,
+            app_category: result.appCategory,
+            safety_score: result.safetyScore,
+            app_safety_status: result.appSafetyStatus,
+            analysis_metadata: {
+              platform,
+              scan_timestamp: new Date().toISOString()
+            }
+          }))
+        );
+
+      if (mlError) {
+        console.error('Error saving ML results:', mlError);
+      }
+    }
+
     // Return the scan result in the correct format
     return {
       id: crypto.randomUUID(),
@@ -70,7 +104,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
         metadata: data.metadata,
         file_metadata: data.file_metadata,
         malware_classification: data.malware_classification || [],
-        ml_results: data.ml_results || [],
+        ml_results: mlResults,
         yara_matches: data.yara_matches || [],
         engine_results: data.engine_results || [],
         scan_stats: data.scan_stats || {

@@ -95,10 +95,12 @@ export type Database = {
           configuration: Json | null
           created_at: string | null
           description: string | null
+          detection_categories: string[] | null
           id: string
           model_name: string
           model_path: string
           model_type: Database["public"]["Enums"]["ml_model_type"]
+          supported_platforms: string[] | null
           updated_at: string | null
           version: string
         }
@@ -106,10 +108,12 @@ export type Database = {
           configuration?: Json | null
           created_at?: string | null
           description?: string | null
+          detection_categories?: string[] | null
           id?: string
           model_name: string
           model_path: string
           model_type: Database["public"]["Enums"]["ml_model_type"]
+          supported_platforms?: string[] | null
           updated_at?: string | null
           version: string
         }
@@ -117,10 +121,12 @@ export type Database = {
           configuration?: Json | null
           created_at?: string | null
           description?: string | null
+          detection_categories?: string[] | null
           id?: string
           model_name?: string
           model_path?: string
           model_type?: Database["public"]["Enums"]["ml_model_type"]
+          supported_platforms?: string[] | null
           updated_at?: string | null
           version?: string
         }
@@ -129,32 +135,41 @@ export type Database = {
       ml_scan_results: {
         Row: {
           analysis_metadata: Json | null
+          app_category: string | null
+          app_safety_status: string | null
           confidence_score: number
           created_at: string | null
           detection_type: string
           id: string
           model_name: string
           model_version: string | null
+          safety_score: number | null
           scan_id: string | null
         }
         Insert: {
           analysis_metadata?: Json | null
+          app_category?: string | null
+          app_safety_status?: string | null
           confidence_score: number
           created_at?: string | null
           detection_type: string
           id?: string
           model_name: string
           model_version?: string | null
+          safety_score?: number | null
           scan_id?: string | null
         }
         Update: {
           analysis_metadata?: Json | null
+          app_category?: string | null
+          app_safety_status?: string | null
           confidence_score?: number
           created_at?: string | null
           detection_type?: string
           id?: string
           model_name?: string
           model_version?: string | null
+          safety_score?: number | null
           scan_id?: string | null
         }
         Relationships: []
