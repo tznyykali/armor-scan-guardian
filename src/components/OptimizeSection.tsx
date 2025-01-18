@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Shield, Zap } from 'lucide-react';
+import { Loader2, Shield, Zap, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
 import OptimizeHeader from './optimize/OptimizeHeader';
@@ -7,6 +7,7 @@ import SystemHealthCard from './optimize/SystemHealthCard';
 import PerformanceCard from './optimize/PerformanceCard';
 import ResourceUsageCard from './optimize/ResourceUsageCard';
 import RecommendationsCard from './optimize/RecommendationsCard';
+import InstalledAppsCard from './optimize/InstalledAppsCard';
 
 interface OptimizationResults {
   systemHealth: number;
@@ -31,6 +32,15 @@ interface OptimizationResults {
     efficiencyScore: number;
   };
   recommendations: string[];
+  installedApps?: {
+    name: string;
+    packageName: string;
+    version: string;
+    installDate: string;
+    size: number;
+    permissions: string[];
+    riskLevel: string;
+  }[];
 }
 
 interface SystemMetrics {
@@ -40,6 +50,14 @@ interface SystemMetrics {
   storage: number;
   networkActivity?: number;
   runningProcesses?: string[];
+  installedApps?: {
+    name: string;
+    packageName: string;
+    version: string;
+    installDate: string;
+    size: number;
+    permissions: string[];
+  }[];
 }
 
 const OptimizeSection = () => {
@@ -47,6 +65,29 @@ const OptimizeSection = () => {
   const [optimizationProgress, setOptimizationProgress] = useState(0);
   const [results, setResults] = useState<OptimizationResults | null>(null);
   const { toast } = useToast();
+
+  const getMockInstalledApps = () => {
+    // Simulated list of installed apps for testing
+    return [
+      {
+        name: "Social Media App",
+        packageName: "com.example.social",
+        version: "2.1.0",
+        installDate: new Date().toISOString(),
+        size: 45000000,
+        permissions: ["CAMERA", "LOCATION", "STORAGE"]
+      },
+      {
+        name: "Messaging App",
+        packageName: "com.example.message",
+        version: "3.0.1",
+        installDate: new Date().toISOString(),
+        size: 32000000,
+        permissions: ["CONTACTS", "CAMERA", "MICROPHONE"]
+      },
+      // Add more mock apps as needed
+    ];
+  };
 
   const getSystemMetrics = (): SystemMetrics => {
     return {
@@ -60,7 +101,8 @@ const OptimizeSection = () => {
         'com.android.systemui',
         'com.google.android.gms',
         'com.android.phone'
-      ]
+      ],
+      installedApps: getMockInstalledApps()
     };
   };
 
@@ -98,7 +140,7 @@ const OptimizeSection = () => {
         title: data.data.malwareDetection.threatsFound > 0 ? "Warning" : "Optimization Complete",
         description: data.data.malwareDetection.threatsFound > 0
           ? "Threats detected! Review the analysis results."
-          : "Your Android device has been successfully optimized",
+          : "Your device has been successfully optimized",
         variant: data.data.malwareDetection.threatsFound > 0 ? "destructive" : "default",
       });
     } catch (error) {
@@ -120,11 +162,11 @@ const OptimizeSection = () => {
       <div className="space-y-6">
         <div className="bg-cyber-DEFAULT/30 rounded-lg p-4">
           <div className="flex items-center space-x-2 mb-2">
-            <Shield className="w-5 h-5 text-safe-DEFAULT" />
-            <span className="font-medium">ML-Powered System Analysis</span>
+            <Smartphone className="w-5 h-5 text-safe-DEFAULT" />
+            <span className="font-medium">App Security Scanner</span>
           </div>
           <p className="text-sm text-foreground/60">
-            Advanced machine learning analysis of your Android system for security threats and performance optimization.
+            Comprehensive security analysis of all installed applications and system optimization.
           </p>
         </div>
 
@@ -136,6 +178,10 @@ const OptimizeSection = () => {
               threatsFound={results.malwareDetection.threatsFound}
               suspiciousPatterns={results.malwareDetection.suspiciousPatterns}
             />
+            
+            {results.installedApps && (
+              <InstalledAppsCard apps={results.installedApps} />
+            )}
             
             <PerformanceCard
               beforeOptimization={results.performance.beforeOptimization}
@@ -165,10 +211,10 @@ const OptimizeSection = () => {
           {isOptimizing ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Analyzing System... {optimizationProgress}%</span>
+              <span>Scanning Apps & System... {optimizationProgress}%</span>
             </>
           ) : (
-            <span>Start System Analysis</span>
+            <span>Start System & Apps Analysis</span>
           )}
         </button>
       </div>
