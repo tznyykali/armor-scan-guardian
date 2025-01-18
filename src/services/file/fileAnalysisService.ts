@@ -23,6 +23,13 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw new Error('No scan results received');
     }
 
+    // Determine platform and extract relevant info
+    const platform = file.name.toLowerCase().endsWith('.aab') || file.name.toLowerCase().endsWith('.apk')
+      ? 'android'
+      : file.name.toLowerCase().endsWith('.ipa')
+        ? 'ios'
+        : 'desktop';
+
     // Save scan result to the current_scan_results table
     const { error: saveError } = await supabase
       .from('current_scan_results')
@@ -35,6 +42,10 @@ export async function scanFile(file: File): Promise<ScanResult> {
         sha256_hash: data.file_metadata?.sha256,
         threat_category: data.malware_classification?.[0] || 'unknown',
         yara_matches: data.yara_matches || [],
+        platform,
+        app_bundle_info: data.app_bundle_info || {},
+        app_permissions: data.app_permissions || [],
+        app_components: data.app_components || {},
         file_metadata: {
           magic: data.metadata?.magic,
           mime_type: file.type,

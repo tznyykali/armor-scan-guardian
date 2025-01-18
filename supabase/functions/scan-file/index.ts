@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -41,7 +40,71 @@ serve(async (req) => {
       sha256: hashToHex(sha256Hash),
     };
 
-    // Simulate scan results
+    // Get YARA rules from the database
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: yaraRules, error: yaraError } = await supabase
+      .from('yara_rules')
+      .select('*');
+
+    if (yaraError) {
+      throw new Error('Failed to fetch YARA rules');
+    }
+
+    // Simulate YARA scanning with the rules
+    const yaraMatches = yaraRules
+      .filter(() => Math.random() > 0.7) // Simulate matching
+      .map(rule => ({
+        rule_match: rule.name,
+        category: rule.category,
+        detection_details: {
+          description: rule.description
+        }
+      }));
+
+    // Extract mobile app info if applicable
+    let appInfo = {};
+    let appPermissions = [];
+    let appComponents = {};
+
+    if (file.name.endsWith('.apk') || file.name.endsWith('.aab')) {
+      // Simulate Android app analysis
+      appInfo = {
+        package_name: 'com.example.app',
+        version_code: '1.0.0',
+        min_sdk: '21',
+        target_sdk: '33'
+      };
+      appPermissions = [
+        'android.permission.INTERNET',
+        'android.permission.ACCESS_NETWORK_STATE'
+      ];
+      appComponents = {
+        activities: ['MainActivity', 'SettingsActivity'],
+        services: ['BackgroundService'],
+        receivers: ['BootReceiver']
+      };
+    } else if (file.name.endsWith('.ipa')) {
+      // Simulate iOS app analysis
+      appInfo = {
+        bundle_id: 'com.example.app',
+        version: '1.0.0',
+        minimum_os_version: '13.0'
+      };
+      appPermissions = [
+        'NSCameraUsageDescription',
+        'NSPhotoLibraryUsageDescription'
+      ];
+      appComponents = {
+        frameworks: ['UIKit', 'CoreData'],
+        capabilities: ['Push Notifications', 'Background Modes']
+      };
+    }
+
+    // Prepare scan results
     const scanResults = {
       status: 'completed',
       metadata: {
@@ -54,41 +117,17 @@ serve(async (req) => {
         magic: file.type,
       },
       file_metadata: fileMetadata,
-      malware_classification: [],
-      ml_results: [
-        {
-          model_name: 'ML Scanner v1',
-          detection_type: 'static_analysis',
-          confidence_score: 0.95,
-          model_version: '1.0.0'
-        }
-      ],
-      yara_matches: [
-        {
-          rule_match: 'CLEAN_FILE',
-          category: 'info',
-          detection_details: {
-            description: 'No malicious patterns detected'
-          }
-        }
-      ],
-      engine_results: [
-        {
-          engine_name: 'Static Analyzer',
-          engine_type: 'static',
-          engine_version: '1.0.0',
-          engine_update: new Date().toISOString(),
-          category: 'clean',
-          description: 'No threats detected'
-        }
-      ],
+      app_bundle_info: appInfo,
+      app_permissions: appPermissions,
+      app_components: appComponents,
+      malware_classification: yaraMatches.length > 0 ? ['potential_threat'] : ['clean'],
+      yara_matches: yaraMatches,
       scan_stats: {
-        harmless: 1,
-        malicious: 0,
-        suspicious: 0,
+        harmless: yaraMatches.length === 0 ? 1 : 0,
+        malicious: yaraMatches.length > 2 ? 1 : 0,
+        suspicious: yaraMatches.length > 0 && yaraMatches.length <= 2 ? 1 : 0,
         undetected: 0,
-      },
-      detection_details: []
+      }
     };
 
     console.log('Scan completed, returning results');

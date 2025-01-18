@@ -38,12 +38,16 @@ export type Database = {
       }
       current_scan_results: {
         Row: {
+          app_bundle_info: Json | null
+          app_components: Json | null
+          app_permissions: Json | null
           file_metadata: Json | null
           file_name: string
           file_size: number | null
           file_type: string | null
           id: string
           md5_hash: string | null
+          platform: string | null
           scan_timestamp: string | null
           sha1_hash: string | null
           sha256_hash: string | null
@@ -51,12 +55,16 @@ export type Database = {
           yara_matches: Json | null
         }
         Insert: {
+          app_bundle_info?: Json | null
+          app_components?: Json | null
+          app_permissions?: Json | null
           file_metadata?: Json | null
           file_name: string
           file_size?: number | null
           file_type?: string | null
           id?: string
           md5_hash?: string | null
+          platform?: string | null
           scan_timestamp?: string | null
           sha1_hash?: string | null
           sha256_hash?: string | null
@@ -64,12 +72,16 @@ export type Database = {
           yara_matches?: Json | null
         }
         Update: {
+          app_bundle_info?: Json | null
+          app_components?: Json | null
+          app_permissions?: Json | null
           file_metadata?: Json | null
           file_name?: string
           file_size?: number | null
           file_type?: string | null
           id?: string
           md5_hash?: string | null
+          platform?: string | null
           scan_timestamp?: string | null
           sha1_hash?: string | null
           sha256_hash?: string | null

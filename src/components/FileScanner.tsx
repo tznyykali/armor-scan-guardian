@@ -19,7 +19,35 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
     }
   };
 
+  const isValidFileType = (file: File) => {
+    const validTypes = [
+      // Android files
+      'application/vnd.android.package-archive', // .apk
+      'application/octet-stream', // .aab (Android App Bundle)
+      // iOS files
+      'application/x-ios-app', // .ipa
+      // Common file types
+      'application/pdf',
+      'application/x-msdownload', // .exe
+      'application/x-executable', // Linux executables
+      'application/x-mach-binary', // macOS executables
+      'application/zip',
+      'application/x-zip-compressed',
+      'application/java-archive', // .jar
+    ];
+
+    return validTypes.includes(file.type) || 
+           file.name.endsWith('.apk') || 
+           file.name.endsWith('.aab') || 
+           file.name.endsWith('.ipa');
+  };
+
   const handleFileScan = async (file: File) => {
+    if (!isValidFileType(file)) {
+      handleScanFailure(new Error('Invalid file type. Please upload a supported file type (APK, AAB, IPA, EXE, PDF, etc.)'));
+      return;
+    }
+
     setIsScanning(true);
     try {
       const results = await scanFile(file);
@@ -49,6 +77,7 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
           type="file"
           id="file-upload"
           className="hidden"
+          accept=".apk,.aab,.ipa,.exe,.dll,.pdf,.zip,.jar"
           onChange={(e) => {
             if (e.target.files?.[0]) {
               handleFileScan(e.target.files[0]);
@@ -71,6 +100,9 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
               <Upload className="w-12 h-12 text-rust dark:text-rust-light" />
               <span className="text-sm font-mono text-taupe dark:text-beige">
                 Drag & drop files here or click to upload_
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Supported: APK, AAB, IPA, EXE, DLL, PDF, ZIP, JAR
               </span>
             </>
           )}
