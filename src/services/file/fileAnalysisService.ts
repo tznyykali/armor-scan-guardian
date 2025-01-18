@@ -24,6 +24,8 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw new Error('No scan results received');
     }
 
+    console.log('Raw scan results:', data);
+
     // Determine platform and extract relevant info
     const platform = file.name.toLowerCase().endsWith('.aab') || file.name.toLowerCase().endsWith('.apk')
       ? 'android'
@@ -34,10 +36,12 @@ export async function scanFile(file: File): Promise<ScanResult> {
     // Perform ML analysis if it's a mobile app
     let mlResults = [];
     if (platform === 'android' || platform === 'ios') {
+      console.log('Starting ML analysis for file type:', file.type);
       mlResults = await analyzeMobileApp(file.type, {
         app_permissions: data.app_permissions,
         app_components: data.app_components
       });
+      console.log('ML analysis results:', mlResults);
     }
 
     // Save scan result to the current_scan_results table
