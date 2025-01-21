@@ -15,11 +15,30 @@ serve(async (req) => {
 
   try {
     console.log('Starting file scan in Edge Function...');
+    
+    // Check content type
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('multipart/form-data')) {
+      return new Response(
+        JSON.stringify({ error: 'Content-Type must be multipart/form-data' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file');
 
     if (!file || !(file instanceof File)) {
-      throw new Error('No file provided');
+      return new Response(
+        JSON.stringify({ error: 'No file provided' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     console.log('File received:', file.name, 'Size:', file.size);
@@ -137,7 +156,8 @@ serve(async (req) => {
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json',
-        } 
+        },
+        status: 200
       }
     );
 
@@ -149,7 +169,7 @@ serve(async (req) => {
         details: error instanceof Error ? error.stack : undefined 
       }),
       { 
-        status: 400,
+        status: 500,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json',

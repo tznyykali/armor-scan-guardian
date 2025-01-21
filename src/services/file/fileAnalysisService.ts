@@ -15,9 +15,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
     // Call the scan-file edge function with the correct configuration
     const { data, error } = await supabase.functions.invoke('scan-file', {
       body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      // Remove the manual Content-Type header to let the browser set it with the boundary
     });
 
     if (error) {
