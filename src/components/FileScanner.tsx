@@ -45,7 +45,31 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         description: `File ${file.name} has been successfully scanned`,
       });
       
-      handleScanComplete('file', file.name, results);
+      // Create a properly formatted scan result object
+      const formattedResult: ScanResult = {
+        id: results.id || crypto.randomUUID(),
+        type: 'file',
+        target: file.name,
+        timestamp: new Date().toISOString(),
+        results: {
+          status: results.status,
+          metadata: results.metadata,
+          file_metadata: results.file_metadata,
+          malware_classification: results.malware_classification,
+          ml_results: results.ml_results || [],
+          yara_matches: results.yara_matches || [],
+          engine_results: results.engine_results || [],
+          scan_stats: results.scan_stats || {
+            harmless: 0,
+            malicious: 0,
+            suspicious: 0,
+            undetected: 0
+          },
+          detection_details: results.detection_details || []
+        }
+      };
+      
+      handleScanComplete('file', file.name, formattedResult);
     } catch (error) {
       console.error('File scan error:', error);
       toast({
