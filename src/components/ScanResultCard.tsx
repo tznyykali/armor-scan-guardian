@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import FileMetadata from './scan-results/FileMetadata';
 import ThreatClassification from './scan-results/ThreatClassification';
 import MLResults from './scan-results/MLResults';
 import YaraResults from './scan-results/YaraResults';
@@ -95,11 +94,6 @@ const ScanResultCard = ({ result }: ScanResultCardProps) => {
             {/* Scan Statistics */}
             {result.results.scan_stats && (
               <ScanStats stats={result.results.scan_stats} />
-            )}
-            
-            {/* File Metadata */}
-            {result.results.metadata && (
-              <FileMetadata metadata={result.results.metadata} />
             )}
             
             {/* Threat Classification */}
