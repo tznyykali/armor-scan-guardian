@@ -5,7 +5,6 @@ import { ScanResult } from '@/types/scan';
 import { useScan } from '@/hooks/useScan';
 import { useToast } from '@/hooks/use-toast';
 import { isValidFileType } from '@/utils/fileValidation';
-import { formatScanResult } from '@/utils/scanResultFormatter';
 import FileDropZone from './scan/FileDropZone';
 
 interface FileScannerProps {
@@ -13,49 +12,33 @@ interface FileScannerProps {
 }
 
 const FileScanner = ({ onScanComplete }: FileScannerProps) => {
-  const { isScanning, setIsScanning, handleScanComplete, handleScanFailure } = useScan({ onScanComplete });
+  const { isScanning, setIsScanning, handleScanComplete } = useScan({ onScanComplete });
   const { toast } = useToast();
 
   const handleFileScan = async (file: File) => {
-    console.log('Starting file scan for:', file.name);
-    
     if (!isValidFileType(file)) {
-      const errorMessage = 'Invalid file type. Please upload a supported file type (APK, AAB, IPA, EXE, PDF, etc.)';
-      console.error(errorMessage);
       toast({
         title: "Invalid File Type",
-        description: errorMessage,
+        description: "Please upload a supported file type (APK, AAB, IPA, EXE, PDF, etc.)",
         variant: "destructive",
       });
-      handleScanFailure(new Error(errorMessage));
       return;
     }
 
     setIsScanning(true);
     try {
-      console.log('Initiating scan for file:', file.name);
       const scanResults = await scanFile(file);
-      console.log('Scan results received:', scanResults);
-      
-      if (!scanResults) {
-        throw new Error('No scan results received');
-      }
-      
+      handleScanComplete('file', file.name, scanResults);
       toast({
         title: "Scan Complete",
         description: `File ${file.name} has been successfully scanned`,
       });
-      
-      const formattedResult = formatScanResult(scanResults, file.name);
-      handleScanComplete('file', file.name, formattedResult);
     } catch (error) {
-      console.error('File scan error:', error);
       toast({
         title: "Scan Error",
         description: error instanceof Error ? error.message : "Failed to scan file",
         variant: "destructive",
       });
-      handleScanFailure(error);
     } finally {
       setIsScanning(false);
     }
