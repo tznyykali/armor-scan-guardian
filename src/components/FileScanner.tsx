@@ -33,10 +33,10 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
     setIsScanning(true);
     try {
       console.log('Initiating scan for file:', file.name);
-      const results = await scanFile(file);
-      console.log('Scan results received:', results);
+      const scanResults = await scanFile(file);
+      console.log('Scan results received:', scanResults);
       
-      if (!results) {
+      if (!scanResults) {
         throw new Error('No scan results received');
       }
       
@@ -47,25 +47,48 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
       
       // Create a properly formatted scan result object
       const formattedResult: ScanResult = {
-        id: results.id || crypto.randomUUID(),
+        id: crypto.randomUUID(),
         type: 'file',
         target: file.name,
         timestamp: new Date().toISOString(),
         results: {
-          status: results.status,
-          metadata: results.metadata,
-          file_metadata: results.file_metadata,
-          malware_classification: results.malware_classification,
-          ml_results: results.ml_results || [],
-          yara_matches: results.yara_matches || [],
-          engine_results: results.engine_results || [],
-          scan_stats: results.scan_stats || {
+          status: scanResults.data?.attributes?.status || 'completed',
+          metadata: scanResults.data?.attributes?.metadata || {},
+          file_metadata: {
+            md5: scanResults.data?.attributes?.md5,
+            sha1: scanResults.data?.attributes?.sha1,
+            sha256: scanResults.data?.attributes?.sha256,
+          },
+          malware_classification: scanResults.data?.attributes?.categories?.malware ? ['malware'] : [],
+          ml_results: scanResults.data?.attributes?.ml_results?.map(result => ({
+            model_name: result.model_name || '',
+            detection_type: result.detection_type || '',
+            confidence_score: result.confidence_score || 0,
+            model_version: result.model_version
+          })) || [],
+          yara_matches: scanResults.data?.attributes?.yara_matches?.map(match => ({
+            rule_match: match.rule_match || '',
+            category: match.category || '',
+            detection_details: {
+              description: match.detection_details?.description || ''
+            }
+          })) || [],
+          engine_results: scanResults.data?.attributes?.engine_results?.map(engine => ({
+            engine_name: engine.engine_name || '',
+            engine_type: engine.engine_type || '',
+            malware_type: engine.malware_type,
+            engine_version: engine.engine_version,
+            engine_update: engine.engine_update,
+            category: engine.category,
+            description: engine.description
+          })) || [],
+          scan_stats: scanResults.data?.attributes?.stats || {
             harmless: 0,
             malicious: 0,
             suspicious: 0,
             undetected: 0
           },
-          detection_details: results.detection_details || []
+          detection_details: scanResults.data?.attributes?.detection_details || []
         }
       };
       
