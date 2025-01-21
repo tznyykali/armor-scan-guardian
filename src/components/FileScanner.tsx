@@ -52,28 +52,28 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         target: file.name,
         timestamp: new Date().toISOString(),
         results: {
-          status: scanResults.status || 'completed',
-          metadata: scanResults.metadata || {},
+          status: scanResults.results.status || 'completed',
+          metadata: scanResults.results.metadata || {},
           file_metadata: {
-            md5: scanResults.file_metadata?.md5,
-            sha1: scanResults.file_metadata?.sha1,
-            sha256: scanResults.file_metadata?.sha256,
+            md5: scanResults.results.file_metadata?.md5,
+            sha1: scanResults.results.file_metadata?.sha1,
+            sha256: scanResults.results.file_metadata?.sha256,
           },
-          malware_classification: scanResults.malware_classification || [],
-          ml_results: scanResults.ml_results?.map(result => ({
+          malware_classification: scanResults.results.malware_classification || [],
+          ml_results: scanResults.results.ml_results?.map(result => ({
             model_name: result.model_name || '',
             detection_type: result.detection_type || '',
             confidence_score: result.confidence_score || 0,
             model_version: result.model_version
           })) || [],
-          yara_matches: scanResults.yara_matches?.map(match => ({
+          yara_matches: scanResults.results.yara_matches?.map(match => ({
             rule_match: match.rule_match || '',
             category: match.category || '',
             detection_details: {
               description: match.detection_details?.description || ''
             }
           })) || [],
-          engine_results: scanResults.engine_results?.map(engine => ({
+          engine_results: scanResults.results.engine_results?.map(engine => ({
             engine_name: engine.engine_name || '',
             engine_type: engine.engine_type || '',
             malware_type: engine.malware_type,
@@ -82,13 +82,13 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
             category: engine.category,
             description: engine.description
           })) || [],
-          scan_stats: scanResults.scan_stats || {
+          scan_stats: scanResults.results.scan_stats || {
             harmless: 0,
             malicious: 0,
             suspicious: 0,
             undetected: 0
           },
-          detection_details: scanResults.detection_details || []
+          detection_details: scanResults.results.detection_details || []
         }
       };
       
