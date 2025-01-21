@@ -10,9 +10,14 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const formData = new FormData();
     formData.append('file', file);
 
-    // Call the scan-file edge function
+    console.log('Calling scan-file edge function...');
+    
+    // Call the scan-file edge function with the correct configuration
     const { data, error } = await supabase.functions.invoke('scan-file', {
       body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
 
     if (error) {
@@ -32,17 +37,6 @@ export async function scanFile(file: File): Promise<ScanResult> {
       : file.name.toLowerCase().endsWith('.ipa')
         ? 'ios'
         : 'desktop';
-
-    // Perform ML analysis if it's a mobile app
-    let mlResults = [];
-    if (platform === 'android' || platform === 'ios') {
-      console.log('Starting ML analysis for file type:', file.type);
-      mlResults = await analyzeMobileApp(file.type, {
-        app_permissions: data.app_permissions,
-        app_components: data.app_components
-      });
-      console.log('ML analysis results:', mlResults);
-    }
 
     // Save scan result to the current_scan_results table
     const { error: saveError } = await supabase
@@ -73,27 +67,38 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw saveError;
     }
 
-    // Save ML scan results if available
-    if (mlResults.length > 0) {
-      const { error: mlError } = await supabase
-        .from('ml_scan_results')
-        .insert(
-          mlResults.map(result => ({
-            model_name: result.modelName,
-            confidence_score: result.confidence,
-            detection_type: result.detectionType,
-            app_category: result.appCategory,
-            safety_score: result.safetyScore,
-            app_safety_status: result.appSafetyStatus,
-            analysis_metadata: {
-              platform,
-              scan_timestamp: new Date().toISOString()
-            }
-          }))
-        );
+    // Perform ML analysis if it's a mobile app
+    let mlResults = [];
+    if (platform === 'android' || platform === 'ios') {
+      console.log('Starting ML analysis for file type:', file.type);
+      mlResults = await analyzeMobileApp(file.type, {
+        app_permissions: data.app_permissions,
+        app_components: data.app_components
+      });
+      console.log('ML analysis results:', mlResults);
 
-      if (mlError) {
-        console.error('Error saving ML results:', mlError);
+      // Save ML scan results
+      if (mlResults.length > 0) {
+        const { error: mlError } = await supabase
+          .from('ml_scan_results')
+          .insert(
+            mlResults.map(result => ({
+              model_name: result.modelName,
+              confidence_score: result.confidence,
+              detection_type: result.detectionType,
+              app_category: result.appCategory,
+              safety_score: result.safetyScore,
+              app_safety_status: result.appSafetyStatus,
+              analysis_metadata: {
+                platform,
+                scan_timestamp: new Date().toISOString()
+              }
+            }))
+          );
+
+        if (mlError) {
+          console.error('Error saving ML results:', mlError);
+        }
       }
     }
 

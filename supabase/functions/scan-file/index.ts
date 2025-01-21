@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -56,7 +57,7 @@ serve(async (req) => {
 
     // Simulate YARA scanning with the rules
     const yaraMatches = yaraRules
-      .filter(() => Math.random() > 0.7) // Simulate matching
+      .filter(() => Math.random() > 0.7)
       .map(rule => ({
         rule_match: rule.name,
         category: rule.category,
@@ -71,7 +72,6 @@ serve(async (req) => {
     let appComponents = {};
 
     if (file.name.endsWith('.apk') || file.name.endsWith('.aab')) {
-      // Simulate Android app analysis
       appInfo = {
         package_name: 'com.example.app',
         version_code: '1.0.0',
@@ -88,7 +88,6 @@ serve(async (req) => {
         receivers: ['BootReceiver']
       };
     } else if (file.name.endsWith('.ipa')) {
-      // Simulate iOS app analysis
       appInfo = {
         bundle_id: 'com.example.app',
         version: '1.0.0',
