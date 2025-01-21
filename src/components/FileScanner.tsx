@@ -5,6 +5,7 @@ import { ScanResult } from '@/types/scan';
 import { useScan } from '@/hooks/useScan';
 import { useToast } from '@/hooks/use-toast';
 import { isValidFileType } from '@/utils/fileValidation';
+import { formatScanResult } from '@/utils/scanResultFormatter';
 import FileDropZone from './scan/FileDropZone';
 
 interface FileScannerProps {
@@ -45,53 +46,7 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         description: `File ${file.name} has been successfully scanned`,
       });
       
-      // Create a properly formatted scan result object
-      const formattedResult: ScanResult = {
-        id: crypto.randomUUID(),
-        type: 'file',
-        target: file.name,
-        timestamp: new Date().toISOString(),
-        results: {
-          status: scanResults.results.status || 'completed',
-          metadata: scanResults.results.metadata || {},
-          file_metadata: {
-            md5: scanResults.results.file_metadata?.md5,
-            sha1: scanResults.results.file_metadata?.sha1,
-            sha256: scanResults.results.file_metadata?.sha256,
-          },
-          malware_classification: scanResults.results.malware_classification || [],
-          ml_results: scanResults.results.ml_results?.map(result => ({
-            model_name: result.model_name || '',
-            detection_type: result.detection_type || '',
-            confidence_score: result.confidence_score || 0,
-            model_version: result.model_version
-          })) || [],
-          yara_matches: scanResults.results.yara_matches?.map(match => ({
-            rule_match: match.rule_match || '',
-            category: match.category || '',
-            detection_details: {
-              description: match.detection_details?.description || ''
-            }
-          })) || [],
-          engine_results: scanResults.results.engine_results?.map(engine => ({
-            engine_name: engine.engine_name || '',
-            engine_type: engine.engine_type || '',
-            malware_type: engine.malware_type,
-            engine_version: engine.engine_version,
-            engine_update: engine.engine_update,
-            category: engine.category,
-            description: engine.description
-          })) || [],
-          scan_stats: scanResults.results.scan_stats || {
-            harmless: 0,
-            malicious: 0,
-            suspicious: 0,
-            undetected: 0
-          },
-          detection_details: scanResults.results.detection_details || []
-        }
-      };
-      
+      const formattedResult = formatScanResult(scanResults, file.name);
       handleScanComplete('file', file.name, formattedResult);
     } catch (error) {
       console.error('File scan error:', error);
