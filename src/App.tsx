@@ -1,35 +1,45 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import NavBar from "./components/NavBar";
-import Index from "./pages/Index";
-import Optimize from "./pages/Optimize";
-import Scan from "./pages/Scan";
-import { ThemeProvider } from "./components/ThemeProvider";
+import React from 'react';
+import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Toast from 'react-native-toast-message';
 
+import Index from './pages/Index';
+import Optimize from './pages/Optimize';
+import Scan from './pages/Scan';
+
+const Stack = createNativeStackNavigator();
 const queryClient = new QueryClient();
 
 const App = () => {
+  const isDarkMode = useColorScheme() === 'dark';
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <div className="min-h-screen bg-white dark:bg-gray-900 font-mono">
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <NavBar />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/optimize" element={<Optimize />} />
-                <Route path="/scan" element={<Scan />} />
-              </Routes>
-            </BrowserRouter>
-          </div>
-        </TooltipProvider>
-      </ThemeProvider>
+      <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff' }}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen 
+              name="Home" 
+              component={Index}
+              options={{ title: 'Secure Scan' }}
+            />
+            <Stack.Screen 
+              name="Optimize" 
+              component={Optimize}
+              options={{ title: 'Optimize' }}
+            />
+            <Stack.Screen 
+              name="Scan" 
+              component={Scan}
+              options={{ title: 'Scan' }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+        <Toast />
+      </SafeAreaView>
     </QueryClientProvider>
   );
 };

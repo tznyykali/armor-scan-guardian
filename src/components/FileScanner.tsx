@@ -1,11 +1,12 @@
 import React from 'react';
-import { Upload } from 'lucide-react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import DocumentPicker from 'react-native-document-picker';
+import { Upload } from 'lucide-react-native';
 import { scanFile } from '@/services/virusTotalService';
 import { ScanResult } from '@/types/scan';
 import { useScan } from '@/hooks/useScan';
-import { useToast } from '@/hooks/use-toast';
 import { isValidFileType } from '@/utils/fileValidation';
-import FileDropZone from './scan/FileDropZone';
+import Toast from 'react-native-toast-message';
 
 interface FileScannerProps {
   onScanComplete?: (result: ScanResult) => void;
@@ -13,49 +14,119 @@ interface FileScannerProps {
 
 const FileScanner = ({ onScanComplete }: FileScannerProps) => {
   const { isScanning, setIsScanning, handleScanComplete } = useScan({ onScanComplete });
-  const { toast } = useToast();
 
-  const handleFileScan = async (file: File) => {
-    if (!isValidFileType(file)) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload a supported file type (APK, AAB, IPA, EXE, PDF, etc.)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsScanning(true);
+  const handleFilePick = async () => {
     try {
-      const scanResults = await scanFile(file);
-      handleScanComplete('file', file.name, scanResults);
-      toast({
-        title: "Scan Complete",
-        description: `File ${file.name} has been successfully scanned`,
+      const result = await DocumentPicker.pick({
+        type: [
+          DocumentPicker.types.pdf,
+          DocumentPicker.types.zip,
+          'application/vnd.android.package-archive', // APK
+          'application/x-ios-app', // IPA
+          'application/x-msdownload', // EXE
+        ],
       });
-    } catch (error) {
-      toast({
-        title: "Scan Error",
-        description: error instanceof Error ? error.message : "Failed to scan file",
-        variant: "destructive",
-      });
-    } finally {
-      setIsScanning(false);
+
+      const file = result[0];
+      if (!isValidFileType(file)) {
+        Toast.show({
+          type: 'error',
+          text1: 'Invalid File Type',
+          text2: 'Please upload a supported file type (APK, AAB, IPA, EXE, PDF, etc.)',
+        });
+        return;
+      }
+
+      setIsScanning(true);
+      try {
+        const scanResults = await scanFile(file);
+        handleScanComplete('file', file.name, scanResults);
+        Toast.show({
+          type: 'success',
+          text1: 'Scan Complete',
+          text2: `File ${file.name} has been successfully scanned`,
+        });
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Scan Error',
+          text2: error instanceof Error ? error.message : 'Failed to scan file',
+        });
+      } finally {
+        setIsScanning(false);
+      }
+    } catch (err) {
+      if (!DocumentPicker.isCancel(err)) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to pick file',
+        });
+      }
     }
   };
 
   return (
-    <div className="bg-sage/50 dark:bg-taupe/50 backdrop-blur-lg rounded-lg p-6 border border-sage-dark/20">
-      <div className="flex items-center space-x-2 mb-4">
-        <Upload className="w-5 h-5 text-rust dark:text-rust-light" />
-        <h3 className="text-lg font-mono text-rust dark:text-rust-light">File Scanner_</h3>
-      </div>
-      <FileDropZone 
-        isScanning={isScanning}
-        onFileDrop={handleFileScan}
-      />
-    </div>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Upload width={20} height={20} color="#FF6B6B" />
+        <Text style={styles.title}>File Scanner_</Text>
+      </View>
+      <TouchableOpacity 
+        style={styles.dropZone} 
+        onPress={handleFilePick}
+        disabled={isScanning}
+      >
+        <Upload width={48} height={48} color="#FF6B6B" />
+        <Text style={styles.dropZoneText}>
+          {isScanning ? 'Scanning file...' : 'Tap to select a file_'}
+        </Text>
+        <Text style={styles.supportedText}>
+          Supported: APK, AAB, IPA, EXE, DLL, PDF, ZIP, JAR
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(245, 245, 245, 0.5)',
+    borderRadius: 8,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+    color: '#FF6B6B',
+  },
+  dropZone: {
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 8,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dropZoneText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  supportedText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#999',
+  },
+});
 
 export default FileScanner;

@@ -1,79 +1,99 @@
 import { useState, useEffect } from 'react';
-import { useToast } from './use-toast';
+import { Platform } from 'react-native';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import Toast from 'react-native-toast-message';
 
 export type PermissionStatus = 'granted' | 'denied' | 'prompt' | 'unavailable';
 
 export interface SystemPermissions {
-  battery: PermissionStatus;
   storage: PermissionStatus;
+  camera: PermissionStatus;
   notifications: PermissionStatus;
 }
 
 export const usePermissions = () => {
   const [permissions, setPermissions] = useState<SystemPermissions>({
-    battery: 'prompt',
     storage: 'prompt',
+    camera: 'prompt',
     notifications: 'prompt'
   });
-  const { toast } = useToast();
 
   const checkPermissions = async () => {
-    const updatedPermissions: SystemPermissions = {
-      battery: 'unavailable',
-      storage: 'unavailable',
-      notifications: 'unavailable'
-    };
+    const storagePermission = Platform.select({
+      android: PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+      ios: PERMISSIONS.IOS.MEDIA_LIBRARY,
+    });
 
-    // Check battery permission
-    if ('getBattery' in navigator) {
-      try {
-        const battery = await (navigator as any).getBattery();
-        updatedPermissions.battery = 'granted';
-      } catch {
-        updatedPermissions.battery = 'denied';
-      }
+    const cameraPermission = Platform.select({
+      android: PERMISSIONS.ANDROID.CAMERA,
+      ios: PERMISSIONS.IOS.CAMERA,
+    });
+
+    if (storagePermission && cameraPermission) {
+      const [storageStatus, cameraStatus] = await Promise.all([
+        check(storagePermission),
+        check(cameraPermission),
+      ]);
+
+      setPermissions({
+        storage: storageStatus as PermissionStatus,
+        camera: cameraStatus as PermissionStatus,
+        notifications: permissions.notifications,
+      });
     }
-
-    // Check storage permission
-    if ('storage' in navigator && 'estimate' in (navigator as any).storage) {
-      try {
-        await (navigator as any).storage.estimate();
-        updatedPermissions.storage = 'granted';
-      } catch {
-        updatedPermissions.storage = 'denied';
-      }
-    }
-
-    // Check notification permission
-    if ('Notification' in window) {
-      updatedPermissions.notifications = Notification.permission as PermissionStatus;
-    }
-
-    setPermissions(updatedPermissions);
-    return updatedPermissions;
   };
 
   const requestPermission = async (permission: keyof SystemPermissions) => {
+    let permissionType;
+
     switch (permission) {
-      case 'notifications':
-        if ('Notification' in window) {
-          try {
-            const result = await Notification.requestPermission();
-            setPermissions(prev => ({ ...prev, notifications: result as PermissionStatus }));
-            return result;
-          } catch (error) {
-            console.error('Error requesting notification permission:', error);
-            return 'denied';
-          }
-        }
-        break;
-      
-      case 'battery':
       case 'storage':
-        // These permissions are handled through browser APIs
-        // and don't require explicit permission requests
-        await checkPermissions();
+        permissionType = Platform.select({
+          android: PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+          ios: PERMISSIONS.IOS.MEDIA_LIBRARY,
+        });
         break;
+      case 'camera':
+        permissionType = Platform.select({
+          android: PERMISSIONS.ANDROID.CAMERA,
+          ios: PERMISSIONS.IOS.CAMERA,
+        });
+        break;
+      case 'notifications':
+        permissionType = Platform.select({
+          android: PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
+          ios: PERMISSIONS.IOS.NOTIFICATIONS,
+        });
+        break;
+    }
+
+    if (permissionType) {
+      try {
+        const result = await request(permissionType);
+        setPermissions(prev => ({
+          ...prev,
+          [permission]: result as PermissionStatus
+        }));
+
+        if (result === RESULTS.GRANTED) {
+          Toast.show({
+            type: 'success',
+            text1: 'Permission Granted',
+            text2: `${permission} access has been granted`,
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Permission Denied',
+            text2: `${permission} access is required for full functionality`,
+          });
+        }
+
+        return result;
+      } catch (error) {
+        console.error('Error requesting permission:', error);
+        return 'denied';
+      }
     }
   };
 
