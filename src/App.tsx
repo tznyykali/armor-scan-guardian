@@ -2,7 +2,7 @@ import React from 'react';
 import { SafeAreaView, StatusBar, useColorScheme } from 'react-native';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Toast from 'react-native-toast-message';
+import { Toaster } from "@/components/ui/toaster";
 
 import Index from './pages/Index';
 import Optimize from './pages/Optimize';
@@ -24,7 +24,7 @@ const App = () => {
             <Route path="/scan" element={<Scan />} />
           </Routes>
         </Router>
-        <Toast />
+        <Toaster />
       </SafeAreaView>
     </QueryClientProvider>
   );
