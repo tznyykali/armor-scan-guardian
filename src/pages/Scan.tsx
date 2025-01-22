@@ -1,5 +1,6 @@
 import NetworkBackground from "@/components/NetworkBackground";
 import ScanSection from "@/components/ScanSection";
+import PermissionsManager from "@/components/PermissionsManager";
 import { useEffect } from "react";
 
 const Scan = () => {
@@ -15,10 +16,13 @@ const Scan = () => {
     <div className="min-h-screen pt-16">
       <NetworkBackground />
       <div className="relative container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-mono text-rust-dark dark:text-rust-light mb-12 inline-block">
-          Security Scanner_
-          <span className="animate-cursor-blink border-r-2 border-rust ml-1">|</span>
-        </h2>
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-3xl font-mono text-rust-dark dark:text-rust-light inline-block">
+            Security Scanner_
+            <span className="animate-cursor-blink border-r-2 border-rust ml-1">|</span>
+          </h2>
+          <PermissionsManager />
+        </div>
         <ScanSection />
       </div>
     </div>
