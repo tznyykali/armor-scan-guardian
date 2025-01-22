@@ -15,6 +15,7 @@ export const usePermissions = () => {
       ...prev,
       notifications: notificationPermission,
       battery: batteryPermission,
+      storage: 'granted', // Storage is always granted in web context
     }));
   }, [notificationPermission, batteryPermission]);
 
@@ -28,6 +29,9 @@ export const usePermissions = () => {
           break;
         case 'battery':
           status = await checkBatteryPermission();
+          break;
+        case 'storage':
+          status = 'granted'; // Storage is always granted in web context
           break;
         default:
           status = 'unavailable';

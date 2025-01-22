@@ -1,5 +1,5 @@
 export type PermissionStatus = 'granted' | 'denied' | 'unavailable' | 'unknown' | 'error';
-export type PermissionType = 'notifications' | 'battery';
+export type PermissionType = 'notifications' | 'battery' | 'storage';
 
 export interface SystemMetrics {
   cpuUsage: number;
