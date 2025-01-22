@@ -54,7 +54,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-mono transition-colors duration-300;
+    @apply bg-background text-foreground m-0 p-0 min-h-screen w-full;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -79,3 +80,4 @@
   from, to { border-color: transparent }
   50% { border-color: #E07B39 }
 }
+
