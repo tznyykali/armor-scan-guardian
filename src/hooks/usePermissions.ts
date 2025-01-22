@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import Toast from 'react-native-toast-message';
+import { useToast } from '@/hooks/use-toast';
 
 export type PermissionStatus = 'granted' | 'denied' | 'prompt' | 'unavailable';
 
@@ -19,6 +19,7 @@ export const usePermissions = () => {
     notifications: 'prompt',
     battery: 'prompt'
   });
+  const { toast } = useToast();
 
   const checkPermissions = async () => {
     const storagePermission = Platform.select({
@@ -65,7 +66,7 @@ export const usePermissions = () => {
         // Use appropriate notification permissions for each platform
         permissionType = Platform.select({
           android: PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
-          ios: PERMISSIONS.IOS.LOCATION_ALWAYS, // iOS handles notifications differently
+          ios: PERMISSIONS.IOS.NOTIFICATIONS,
         });
         break;
       case 'battery':
@@ -96,16 +97,15 @@ export const usePermissions = () => {
         }));
 
         if (result === RESULTS.GRANTED) {
-          Toast.show({
-            type: 'success',
-            text1: 'Permission Granted',
-            text2: `${permission} access has been granted`,
+          toast({
+            title: 'Permission Granted',
+            description: `${permission} access has been granted`,
           });
         } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Permission Denied',
-            text2: `${permission} access is required for full functionality`,
+          toast({
+            title: 'Permission Denied',
+            description: `${permission} access is required for full functionality`,
+            variant: "destructive",
           });
         }
 
