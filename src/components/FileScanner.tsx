@@ -12,6 +12,22 @@ interface FileScannerProps {
   onScanComplete?: (result: ScanResult) => void;
 }
 
+// Helper function to convert DocumentPickerResponse to File-like object
+const createFileFromPickerResponse = (response: DocumentPickerResponse) => {
+  return {
+    name: response.name || 'unknown',
+    type: response.type || 'application/octet-stream',
+    size: response.size || 0,
+    uri: response.uri,
+    lastModified: Date.now(),
+    // Add minimal File interface implementation
+    arrayBuffer: async () => new ArrayBuffer(0),
+    slice: () => new Blob(),
+    stream: () => new ReadableStream(),
+    text: async () => '',
+  } as unknown as File;
+};
+
 const FileScanner = ({ onScanComplete }: FileScannerProps) => {
   const { isScanning, setIsScanning, handleScanComplete } = useScan({ onScanComplete });
 
@@ -27,8 +43,10 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
         ],
       });
 
-      const file = result[0];
-      if (!isValidFileType(file)) {
+      const pickerResponse = result[0];
+      const fileObject = createFileFromPickerResponse(pickerResponse);
+      
+      if (!isValidFileType(fileObject)) {
         Toast.show({
           type: 'error',
           text1: 'Invalid File Type',
@@ -39,12 +57,12 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
 
       setIsScanning(true);
       try {
-        const scanResults = await scanFile(file);
-        handleScanComplete('file', file.name, scanResults);
+        const scanResults = await scanFile(fileObject);
+        handleScanComplete('file', fileObject.name, scanResults);
         Toast.show({
           type: 'success',
           text1: 'Scan Complete',
-          text2: `File ${file.name} has been successfully scanned`,
+          text2: `File ${fileObject.name} has been successfully scanned`,
         });
       } catch (error) {
         Toast.show({

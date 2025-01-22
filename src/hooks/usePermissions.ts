@@ -9,7 +9,7 @@ export interface SystemPermissions {
   storage: PermissionStatus;
   camera: PermissionStatus;
   notifications: PermissionStatus;
-  battery: PermissionStatus; // Added battery permission
+  battery: PermissionStatus;
 }
 
 export const usePermissions = () => {
@@ -62,20 +62,29 @@ export const usePermissions = () => {
         });
         break;
       case 'notifications':
+        // Use appropriate notification permissions for each platform
         permissionType = Platform.select({
-          android: PERMISSIONS.ANDROID.ACCESS_NOTIFICATION_POLICY,
-          ios: PERMISSIONS.IOS.LOCATION_ALWAYS,
+          android: PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
+          ios: PERMISSIONS.IOS.LOCATION_ALWAYS, // iOS handles notifications differently
         });
         break;
       case 'battery':
-        // Battery permission is handled differently on iOS and Android
-        // On Android, we can use BATTERY_STATS permission
-        // On iOS, battery info is available without explicit permission
-        permissionType = Platform.select({
-          android: PERMISSIONS.ANDROID.BATTERY_STATS,
-          ios: null,
-        });
-        break;
+        // Battery monitoring is handled differently on each platform
+        if (Platform.OS === 'android') {
+          // Android doesn't require explicit battery permission in newer versions
+          setPermissions(prev => ({
+            ...prev,
+            battery: 'granted'
+          }));
+          return 'granted';
+        } else {
+          // iOS doesn't require battery permission
+          setPermissions(prev => ({
+            ...prev,
+            battery: 'granted'
+          }));
+          return 'granted';
+        }
     }
 
     if (permissionType) {
@@ -105,13 +114,6 @@ export const usePermissions = () => {
         console.error('Error requesting permission:', error);
         return 'denied';
       }
-    } else if (Platform.OS === 'ios' && permission === 'battery') {
-      // On iOS, battery info is available without explicit permission
-      setPermissions(prev => ({
-        ...prev,
-        battery: 'granted'
-      }));
-      return 'granted';
     }
   };
 
