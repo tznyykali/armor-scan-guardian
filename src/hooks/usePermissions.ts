@@ -9,13 +9,15 @@ export interface SystemPermissions {
   storage: PermissionStatus;
   camera: PermissionStatus;
   notifications: PermissionStatus;
+  battery: PermissionStatus; // Added battery permission
 }
 
 export const usePermissions = () => {
   const [permissions, setPermissions] = useState<SystemPermissions>({
     storage: 'prompt',
     camera: 'prompt',
-    notifications: 'prompt'
+    notifications: 'prompt',
+    battery: 'prompt'
   });
 
   const checkPermissions = async () => {
@@ -35,11 +37,11 @@ export const usePermissions = () => {
         check(cameraPermission),
       ]);
 
-      setPermissions({
+      setPermissions(prev => ({
+        ...prev,
         storage: storageStatus as PermissionStatus,
         camera: cameraStatus as PermissionStatus,
-        notifications: permissions.notifications,
-      });
+      }));
     }
   };
 
@@ -61,8 +63,17 @@ export const usePermissions = () => {
         break;
       case 'notifications':
         permissionType = Platform.select({
-          android: PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
-          ios: PERMISSIONS.IOS.NOTIFICATIONS,
+          android: PERMISSIONS.ANDROID.ACCESS_NOTIFICATION_POLICY,
+          ios: PERMISSIONS.IOS.LOCATION_ALWAYS,
+        });
+        break;
+      case 'battery':
+        // Battery permission is handled differently on iOS and Android
+        // On Android, we can use BATTERY_STATS permission
+        // On iOS, battery info is available without explicit permission
+        permissionType = Platform.select({
+          android: PERMISSIONS.ANDROID.BATTERY_STATS,
+          ios: null,
         });
         break;
     }
@@ -94,6 +105,13 @@ export const usePermissions = () => {
         console.error('Error requesting permission:', error);
         return 'denied';
       }
+    } else if (Platform.OS === 'ios' && permission === 'battery') {
+      // On iOS, battery info is available without explicit permission
+      setPermissions(prev => ({
+        ...prev,
+        battery: 'granted'
+      }));
+      return 'granted';
     }
   };
 

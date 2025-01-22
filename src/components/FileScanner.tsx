@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { Upload } from 'lucide-react-native';
 import { scanFile } from '@/services/virusTotalService';
 import { ScanResult } from '@/types/scan';
