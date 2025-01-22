@@ -1,6 +1,7 @@
 import { Shield, Battery, HardDrive, Bell } from 'lucide-react';
 import { Button } from './ui/button';
-import { usePermissions, PermissionStatus } from '@/hooks/usePermissions';
+import usePermissions from '@/hooks/usePermissions';
+import type { PermissionStatus } from '@/hooks/usePermissions';
 import {
   Dialog,
   DialogContent,
