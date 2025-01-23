@@ -1,5 +1,7 @@
 import React from 'react';
-import { Bug } from 'lucide-react';
+import { Bug, AlertTriangle } from 'lucide-react';
+import { Accordion } from "@/components/ui/accordion";
+import YaraResultItem from './YaraResultItem';
 
 interface YaraResultsProps {
   results: Array<{
@@ -12,7 +14,20 @@ interface YaraResultsProps {
 }
 
 const YaraResults = ({ results }: YaraResultsProps) => {
-  if (!results.length) return null;
+  if (!results?.length) {
+    return (
+      <div className="mt-6">
+        <h4 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <Bug className="h-4 w-4" />
+          YARA Analysis Results
+        </h4>
+        <div className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg flex items-center gap-2 text-muted-foreground">
+          <AlertTriangle className="h-4 w-4" />
+          No YARA analysis results available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-6">
@@ -20,28 +35,11 @@ const YaraResults = ({ results }: YaraResultsProps) => {
         <Bug className="h-4 w-4" />
         YARA Analysis Results
       </h4>
-      <div className="space-y-3">
-        {results.map((yara, index) => (
-          <div
-            key={index}
-            className="bg-white/50 dark:bg-midnight-light/50 p-4 rounded-lg"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h5 className="font-semibold text-sm">{yara.rule_match}</h5>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Category: {yara.category}
-                </p>
-              </div>
-            </div>
-            {yara.detection_details && (
-              <p className="text-sm mt-2 text-muted-foreground">
-                {yara.detection_details.description}
-              </p>
-            )}
-          </div>
+      <Accordion type="single" collapsible className="space-y-3">
+        {results.map((result, index) => (
+          <YaraResultItem key={index} result={result} index={index} />
         ))}
-      </div>
+      </Accordion>
     </div>
   );
 };
