@@ -18,7 +18,7 @@ const Index = () => {
   return (
     <div className="h-screen overflow-hidden bg-transparent relative">
       <NetworkBackground />
-      <div className="relative h-full container mx-auto px-4 pt-20 flex items-center justify-center z-10">
+      <div className="relative h-full container mx-auto px-4 pt-28 flex items-center justify-center z-10">
         <div className="flex flex-col items-center justify-center text-center space-y-8 max-w-4xl">
           <div className="relative">
             <Shield className="w-24 h-24 text-rust dark:text-rust-light animate-pulse" />
