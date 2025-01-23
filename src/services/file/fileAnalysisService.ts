@@ -1,21 +1,20 @@
 import { ScanResult } from '@/types/scan';
 import { supabase } from '@/integrations/supabase/client';
 import { analyzeMobileApp } from '../mlAnalysisService';
+import { calculateRiskScore } from '../utils/riskCalculationUtils';
+import { performSnortAnalysis, performHIDSAnalysis } from '../security/securityAnalysisService';
 
 export async function scanFile(file: File): Promise<ScanResult> {
   console.log('Starting file scan with Supabase client...');
   
   try {
-    // Create FormData object
     const formData = new FormData();
     formData.append('file', file);
 
     console.log('Calling scan-file edge function...');
     
-    // Call the scan-file edge function with the correct configuration
     const { data, error } = await supabase.functions.invoke('scan-file', {
       body: formData,
-      // Remove the manual Content-Type header to let the browser set it with the boundary
     });
 
     if (error) {
@@ -29,12 +28,22 @@ export async function scanFile(file: File): Promise<ScanResult> {
 
     console.log('Raw scan results:', data);
 
-    // Determine platform and extract relevant info
+    // Determine platform
     const platform = file.name.toLowerCase().endsWith('.aab') || file.name.toLowerCase().endsWith('.apk')
       ? 'android'
       : file.name.toLowerCase().endsWith('.ipa')
         ? 'ios'
         : 'desktop';
+
+    // Additional security analysis
+    const snortAlerts = await performSnortAnalysis(file.name);
+    const hidsFindings = await performHIDSAnalysis(file.name);
+    
+    const { riskScore, hasHighRiskFactors } = calculateRiskScore(
+      data.metadata,
+      snortAlerts,
+      hidsFindings
+    );
 
     // Save scan result to the current_scan_results table
     const { error: saveError } = await supabase
@@ -65,7 +74,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw saveError;
     }
 
-    // Perform ML analysis if it's a mobile app
+    // Perform ML analysis for mobile apps
     let mlResults = [];
     if (platform === 'android' || platform === 'ios') {
       console.log('Starting ML analysis for file type:', file.type);
@@ -100,27 +109,82 @@ export async function scanFile(file: File): Promise<ScanResult> {
       }
     }
 
-    // Return the scan result in the correct format
+    // Format the scan results to match URL scan format
+    const status = riskScore >= 70 ? 'malicious' : 
+                   riskScore >= 40 ? 'suspicious' : 
+                   'clean';
+
+    const scanStats = {
+      harmless: status === 'clean' ? 1 : 0,
+      malicious: status === 'malicious' ? 1 : 0,
+      suspicious: status === 'suspicious' ? 1 : 0,
+      undetected: 0
+    };
+
+    // Return the scan result in the format matching URL scans
     return {
       id: crypto.randomUUID(),
       type: 'file',
       target: file.name,
       timestamp: new Date().toISOString(),
       results: {
-        status: data.status,
-        metadata: data.metadata,
-        file_metadata: data.file_metadata,
-        malware_classification: data.malware_classification || [],
-        ml_results: mlResults,
-        yara_matches: data.yara_matches || [],
-        engine_results: data.engine_results || [],
-        scan_stats: data.scan_stats || {
-          harmless: 0,
-          malicious: 0,
-          suspicious: 0,
-          undetected: 0
+        status,
+        metadata: {
+          file_info: {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            last_modified: new Date(file.lastModified).toISOString(),
+          },
+          engines_used: data.yara_matches?.length || 0,
+          analysis_date: new Date().toISOString(),
+          categories: {
+            malware: status === 'malicious' ? 'yes' : 'no',
+            encryption: hasHighRiskFactors ? 'yes' : 'no',
+            obfuscation: data.yara_matches?.some(m => m.category === 'obfuscation') ? 'yes' : 'no',
+          },
+          threat_names: data.yara_matches?.map(m => m.rule_match) || [],
+          snort_analysis: snortAlerts,
+          hids_analysis: hidsFindings
         },
-        detection_details: data.detection_details || []
+        malware_classification: data.malware_classification || [],
+        ml_results: mlResults.map(result => ({
+          model_name: result.modelName,
+          detection_type: result.detectionType,
+          confidence_score: result.confidence,
+          model_version: '1.0'
+        })),
+        yara_matches: data.yara_matches || [],
+        engine_results: [
+          {
+            engine_name: 'FileAnalyzer',
+            engine_type: 'yaralyze',
+            malware_type: data.malware_classification?.[0],
+            engine_version: '1.0',
+            engine_update: new Date().toISOString(),
+            category: status,
+            description: `File analysis completed with risk score: ${riskScore}`
+          },
+          ...snortAlerts.map(alert => ({
+            engine_name: 'NetworkAnalyzer',
+            engine_type: 'snort',
+            malware_type: 'network_threat',
+            engine_version: '1.0',
+            engine_update: new Date().toISOString(),
+            category: 'network',
+            description: alert.message
+          }))
+        ],
+        scan_stats: scanStats,
+        detection_details: [
+          ...data.yara_matches?.map(match => 
+            `YARA Match: ${match.rule_match} (${match.category})`
+          ) || [],
+          ...snortAlerts.map(alert => 
+            `Network Alert: ${alert.message}`
+          ),
+          hasHighRiskFactors ? 'High risk factors detected in file analysis' : null
+        ].filter(Boolean)
       }
     };
   } catch (error) {
