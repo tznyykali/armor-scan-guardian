@@ -36,16 +36,25 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
 
         setIsScanning(true);
         try {
+          console.log('Starting file scan...');
           const scanResults = await scanFile(file);
+          
+          if (!scanResults || !scanResults.results) {
+            throw new Error('Invalid scan results received');
+          }
+
+          console.log('Scan results received:', scanResults);
           handleScanComplete('file', file.name, scanResults);
+          
           toast({
             title: "Scan Complete",
             description: `File ${file.name} has been successfully scanned`,
           });
         } catch (error) {
+          console.error('File scan error:', error);
           toast({
             title: "Scan Failed",
-            description: "An error occurred during the scan",
+            description: error instanceof Error ? error.message : "An error occurred during the scan",
             variant: "destructive",
           });
         } finally {
@@ -55,6 +64,7 @@ const FileScanner = ({ onScanComplete }: FileScannerProps) => {
 
       input.click();
     } catch (err) {
+      console.error('File picker error:', err);
       toast({
         title: "Error",
         description: "Failed to pick file",
