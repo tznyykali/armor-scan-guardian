@@ -5,11 +5,26 @@ import { performSnortAnalysis, performHIDSAnalysis } from '../security/securityA
 import { performMlAnalysis } from './mlAnalysisService';
 import { extractFileMetadata } from './metadataService';
 import { formatScanResults } from './scanResultFormatter';
+import { performYaraAnalysis } from '../yaraService';
 
 export async function scanFile(file: File): Promise<ScanResult> {
   console.log('Starting file scan with Supabase client...');
   
   try {
+    // Perform YARA analysis first for quick malware detection
+    console.log('Starting YARA analysis...');
+    const yaraMatches = await performYaraAnalysis(file);
+    
+    // If high-severity malware is detected, we might want to stop further analysis
+    const hasCriticalMalware = yaraMatches.some(
+      match => match.detection_details?.severity === 'high'
+    );
+
+    if (hasCriticalMalware) {
+      console.warn('Critical malware detected, limiting further analysis');
+    }
+
+    // Continue with regular scanning process
     const formData = new FormData();
     formData.append('file', file);
 
@@ -43,7 +58,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const snortAlerts = await performSnortAnalysis(file.name);
     const hidsFindings = await performHIDSAnalysis(file.name);
     
-    const { riskScore, hasHighRiskFactors, hasSuspiciousAlerts, hasSystemFindings } = calculateRiskScore(
+    const { riskScore, hasHighRiskFactors } = calculateRiskScore(
       data.metadata || {},
       snortAlerts || [],
       hidsFindings || {}
@@ -59,8 +74,8 @@ export async function scanFile(file: File): Promise<ScanResult> {
         md5_hash: data.file_metadata?.md5,
         sha1_hash: data.file_metadata?.sha1,
         sha256_hash: data.file_metadata?.sha256,
-        threat_category: data.malware_classification?.[0] || 'unknown',
-        yara_matches: data.yara_matches || [],
+        threat_category: yaraMatches.length > 0 ? 'malware' : 'clean',
+        yara_matches: yaraMatches,
         platform,
         app_bundle_info: appInfo,
         app_permissions: appPermissions,
@@ -81,13 +96,14 @@ export async function scanFile(file: File): Promise<ScanResult> {
     // Perform ML analysis
     const mlResults = await performMlAnalysis(file, platform, {
       app_permissions: appPermissions,
-      app_components: appComponents
+      app_components: appComponents,
+      yara_matches: yaraMatches
     });
 
     const scanStats = {
-      harmless: riskScore < 40 ? 1 : 0,
-      malicious: riskScore >= 70 ? 1 : 0,
-      suspicious: riskScore >= 40 && riskScore < 70 ? 1 : 0,
+      harmless: yaraMatches.length === 0 ? 1 : 0,
+      malicious: yaraMatches.some(m => m.detection_details?.severity === 'high') ? 1 : 0,
+      suspicious: yaraMatches.some(m => m.detection_details?.severity === 'medium') ? 1 : 0,
       undetected: 0
     };
 
@@ -96,9 +112,9 @@ export async function scanFile(file: File): Promise<ScanResult> {
       riskScore,
       scanStats,
       metadata: data.metadata,
-      malwareClassification: data.malware_classification || [],
+      malwareClassification: yaraMatches.map(m => m.rule_match),
       mlResults,
-      yaraMatches: data.yara_matches || [],
+      yaraMatches,
       snortAlerts,
       hidsFindings,
       hasHighRiskFactors

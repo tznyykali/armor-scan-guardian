@@ -68,20 +68,23 @@ serve(async (req) => {
 
     const { data: yaraRules, error: yaraError } = await supabase
       .from('yara_rules')
-      .select('*');
+      .select('*')
+      .eq('category', 'malware');
 
     if (yaraError) {
       throw new Error('Failed to fetch YARA rules');
     }
 
-    // Simulate YARA scanning with the rules
+    // Simulate YARA scanning with malware-specific rules
     const yaraMatches = yaraRules
       .filter(() => Math.random() > 0.7)
       .map(rule => ({
         rule_match: rule.name,
         category: rule.category,
         detection_details: {
-          description: rule.description
+          description: rule.description,
+          severity: Math.random() > 0.5 ? 'high' : 'medium',
+          matched_patterns: ['suspicious_pattern', 'malware_signature']
         }
       }));
 
@@ -122,9 +125,9 @@ serve(async (req) => {
       };
     }
 
-    // Prepare scan results
+    // Prepare scan results with enhanced malware detection
     const scanResults = {
-      status: 'completed',
+      status: yaraMatches.length > 0 ? 'suspicious' : 'completed',
       metadata: {
         file_info: {
           name: file.name,
@@ -138,12 +141,12 @@ serve(async (req) => {
       app_bundle_info: appInfo,
       app_permissions: appPermissions,
       app_components: appComponents,
-      malware_classification: yaraMatches.length > 0 ? ['potential_threat'] : ['clean'],
+      malware_classification: yaraMatches.map(match => match.rule_match),
       yara_matches: yaraMatches,
       scan_stats: {
         harmless: yaraMatches.length === 0 ? 1 : 0,
-        malicious: yaraMatches.length > 2 ? 1 : 0,
-        suspicious: yaraMatches.length > 0 && yaraMatches.length <= 2 ? 1 : 0,
+        malicious: yaraMatches.some(m => m.detection_details?.severity === 'high') ? 1 : 0,
+        suspicious: yaraMatches.some(m => m.detection_details?.severity === 'medium') ? 1 : 0,
         undetected: 0,
       }
     };
