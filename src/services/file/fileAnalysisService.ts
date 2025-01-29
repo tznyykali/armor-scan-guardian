@@ -5,7 +5,8 @@ import { performSnortAnalysis, performHIDSAnalysis } from '../security/securityA
 import { performMlAnalysis } from './mlAnalysisService';
 import { extractFileMetadata } from './metadataService';
 import { formatScanResults } from './scanResultFormatter';
-import { performYaraAnalysis } from '../yaraService';
+import { performYaraAnalysis, YaraMatch } from '../yaraService';
+import { Json } from '@/types/json';
 
 export async function scanFile(file: File): Promise<ScanResult> {
   console.log('Starting file scan with Supabase client...');
@@ -75,11 +76,11 @@ export async function scanFile(file: File): Promise<ScanResult> {
         sha1_hash: data.file_metadata?.sha1,
         sha256_hash: data.file_metadata?.sha256,
         threat_category: yaraMatches.length > 0 ? 'malware' : 'clean',
-        yara_matches: yaraMatches,
+        yara_matches: yaraMatches as Json[],
         platform,
-        app_bundle_info: appInfo,
-        app_permissions: appPermissions,
-        app_components: appComponents,
+        app_bundle_info: appInfo as Json,
+        app_permissions: appPermissions as Json[],
+        app_components: appComponents as Json,
         file_metadata: {
           magic: data.metadata?.magic,
           mime_type: file.type,
@@ -97,7 +98,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const mlResults = await performMlAnalysis(file, platform, {
       app_permissions: appPermissions,
       app_components: appComponents,
-      yara_matches: yaraMatches
+      yara_results: yaraMatches
     });
 
     const scanStats = {

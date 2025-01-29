@@ -1,6 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/types/json';
 
 export interface YaraMatch {
+  [key: string]: Json | undefined;
   rule_match: string;
   category: string;
   detection_details?: {

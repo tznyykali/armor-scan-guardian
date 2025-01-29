@@ -1,10 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { analyzeMobileApp } from '../mlAnalysisService';
+import { YaraMatch } from '../yaraService';
 
-export async function performMlAnalysis(file: File, platform: string, appData: {
+interface AppData {
   app_permissions: string[];
   app_components: Record<string, any>;
-}) {
+  yara_results: YaraMatch[];
+}
+
+export async function performMlAnalysis(file: File, platform: string, appData: AppData) {
   if (platform !== 'android' && platform !== 'ios') {
     return [];
   }
