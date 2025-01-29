@@ -17,11 +17,18 @@ interface HidsFindings {
   };
 }
 
+interface RiskScoreResult {
+  riskScore: number;
+  hasHighRiskFactors: boolean;
+  hasSuspiciousAlerts: boolean;
+  hasSystemFindings: boolean;
+}
+
 export const calculateRiskScore = (
-  metadata: any = {},
+  metadata: Record<string, any> = {},
   snortAlerts: any[] = [],
   hidsFindings: HidsFindings = {}
-): { riskScore: number; hasHighRiskFactors: boolean; hasSuspiciousAlerts: boolean; hasSystemFindings: boolean } => {
+): RiskScoreResult => {
   console.log('Calculating risk score with:', { metadata, snortAlerts, hidsFindings });
 
   const riskFactors: RiskFactors = {

@@ -74,41 +74,6 @@ export async function scanFile(file: File): Promise<ScanResult> {
       throw saveError;
     }
 
-    // Perform ML analysis for mobile apps
-    let mlResults = [];
-    if (platform === 'android' || platform === 'ios') {
-      console.log('Starting ML analysis for file type:', file.type);
-      mlResults = await analyzeMobileApp(file.type, {
-        app_permissions: data.app_permissions || [],
-        app_components: data.app_components || {}
-      });
-      console.log('ML analysis results:', mlResults);
-
-      // Save ML scan results
-      if (mlResults.length > 0) {
-        const { error: mlError } = await supabase
-          .from('ml_scan_results')
-          .insert(
-            mlResults.map(result => ({
-              model_name: result.modelName,
-              confidence_score: result.confidence,
-              detection_type: result.detectionType,
-              app_category: result.appCategory,
-              safety_score: result.safetyScore,
-              app_safety_status: result.appSafetyStatus,
-              analysis_metadata: {
-                platform,
-                scan_timestamp: new Date().toISOString()
-              }
-            }))
-          );
-
-        if (mlError) {
-          console.error('Error saving ML results:', mlError);
-        }
-      }
-    }
-
     // Format the scan results
     const status = riskScore >= 70 ? 'malicious' : 
                    riskScore >= 40 ? 'suspicious' : 
@@ -147,12 +112,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
           hids_analysis: hidsFindings
         },
         malware_classification: data.malware_classification || [],
-        ml_results: mlResults.map(result => ({
-          model_name: result.modelName,
-          detection_type: result.detectionType,
-          confidence_score: result.confidence,
-          model_version: '1.0'
-        })),
+        ml_results: [],
         yara_matches: data.yara_matches || [],
         engine_results: [
           {
