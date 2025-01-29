@@ -39,10 +39,10 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const snortAlerts = await performSnortAnalysis(file.name);
     const hidsFindings = await performHIDSAnalysis(file.name);
     
-    const { riskScore, hasHighRiskFactors } = calculateRiskScore(
+    const { riskScore, hasHighRiskFactors, hasSuspiciousAlerts, hasSystemFindings } = calculateRiskScore(
       data.metadata || {},
       snortAlerts || [],
-      hidsFindings || []
+      hidsFindings || {}
     );
 
     // Save scan result to the current_scan_results table
@@ -139,8 +139,8 @@ export async function scanFile(file: File): Promise<ScanResult> {
           analysis_date: new Date().toISOString(),
           categories: {
             malware: status === 'malicious' ? 'yes' : 'no',
-            encryption: hasHighRiskFactors ? 'yes' : 'no',
-            obfuscation: data.yara_matches?.some(m => m.category === 'obfuscation') ? 'yes' : 'no',
+            encryption: hasSystemFindings ? 'yes' : 'no',
+            obfuscation: hasSuspiciousAlerts ? 'yes' : 'no',
           },
           threat_names: data.yara_matches?.map(m => m.rule_match) || [],
           snort_analysis: snortAlerts,

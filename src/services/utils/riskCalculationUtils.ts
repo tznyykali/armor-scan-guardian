@@ -6,11 +6,22 @@ interface RiskFactors {
   highRiskPermissions: boolean;
 }
 
+interface HidsFindings {
+  file_integrity?: string;
+  system_calls?: string[];
+  permissions?: string;
+  network_activity?: {
+    suspicious_connections: boolean;
+    unusual_ports: boolean;
+    known_bad_ips: boolean;
+  };
+}
+
 export const calculateRiskScore = (
   metadata: any = {},
   snortAlerts: any[] = [],
-  hidsFindings: any[] = []
-): { riskScore: number; hasHighRiskFactors: boolean } => {
+  hidsFindings: HidsFindings = {}
+): { riskScore: number; hasHighRiskFactors: boolean; hasSuspiciousAlerts: boolean; hasSystemFindings: boolean } => {
   console.log('Calculating risk score with:', { metadata, snortAlerts, hidsFindings });
 
   const riskFactors: RiskFactors = {
@@ -29,11 +40,19 @@ export const calculateRiskScore = (
   }
 
   // Check for suspicious or malicious indicators in alerts
-  if (snortAlerts?.length > 0) {
+  const hasSuspiciousAlerts = snortAlerts?.length > 0;
+  if (hasSuspiciousAlerts) {
     riskFactors.suspicious = true;
   }
 
-  if (hidsFindings?.length > 0) {
+  // Check HIDS findings
+  const hasSystemFindings = hidsFindings.network_activity && (
+    hidsFindings.network_activity.suspicious_connections ||
+    hidsFindings.network_activity.unusual_ports ||
+    hidsFindings.network_activity.known_bad_ips
+  );
+  
+  if (hasSystemFindings) {
     riskFactors.suspicious = true;
   }
 
@@ -53,5 +72,5 @@ export const calculateRiskScore = (
 
   console.log('Risk calculation complete:', { riskScore, hasHighRiskFactors, riskFactors });
 
-  return { riskScore, hasHighRiskFactors };
+  return { riskScore, hasHighRiskFactors, hasSuspiciousAlerts, hasSystemFindings };
 };
