@@ -1,29 +1,57 @@
-interface RiskAssessment {
-  riskScore: number;
-  hasHighRiskFactors: boolean;
-  hasSuspiciousAlerts: boolean;
-  hasSystemFindings: boolean;
+interface RiskFactors {
+  malicious: boolean;
+  suspicious: boolean;
+  hasEncryption: boolean;
+  hasObfuscation: boolean;
+  highRiskPermissions: boolean;
 }
 
-export function calculateRiskScore(
-  urlMetadata: any,
-  snortAlerts: any[],
-  hidsFindings: any
-): RiskAssessment {
-  const hasHighRiskFactors = Object.values(urlMetadata.risk_factors).filter(Boolean).length >= 2;
-  const hasSuspiciousAlerts = snortAlerts.length >= 2;
-  const hasSystemFindings = Object.values(hidsFindings.network_activity).filter(Boolean).length >= 2;
-  
-  const riskScore = (
-    (hasHighRiskFactors ? 40 : 0) +
-    (hasSuspiciousAlerts ? 30 : 0) +
-    (hasSystemFindings ? 30 : 0)
-  );
+export const calculateRiskScore = (
+  metadata: any = {},
+  snortAlerts: any[] = [],
+  hidsFindings: any[] = []
+): { riskScore: number; hasHighRiskFactors: boolean } => {
+  console.log('Calculating risk score with:', { metadata, snortAlerts, hidsFindings });
 
-  return {
-    riskScore,
-    hasHighRiskFactors,
-    hasSuspiciousAlerts,
-    hasSystemFindings
+  const riskFactors: RiskFactors = {
+    malicious: false,
+    suspicious: false,
+    hasEncryption: false,
+    hasObfuscation: false,
+    highRiskPermissions: false
   };
-}
+
+  // Check metadata categories if they exist
+  if (metadata?.categories) {
+    riskFactors.malicious = metadata.categories.malware === 'yes';
+    riskFactors.hasEncryption = metadata.categories.encryption === 'yes';
+    riskFactors.hasObfuscation = metadata.categories.obfuscation === 'yes';
+  }
+
+  // Check for suspicious or malicious indicators in alerts
+  if (snortAlerts?.length > 0) {
+    riskFactors.suspicious = true;
+  }
+
+  if (hidsFindings?.length > 0) {
+    riskFactors.suspicious = true;
+  }
+
+  // Calculate risk score based on risk factors
+  let riskScore = 0;
+  if (riskFactors.malicious) riskScore += 40;
+  if (riskFactors.suspicious) riskScore += 20;
+  if (riskFactors.hasEncryption) riskScore += 15;
+  if (riskFactors.hasObfuscation) riskScore += 15;
+  if (riskFactors.highRiskPermissions) riskScore += 10;
+
+  // Cap the risk score at 100
+  riskScore = Math.min(riskScore, 100);
+
+  // Determine if there are high risk factors
+  const hasHighRiskFactors = riskScore >= 70;
+
+  console.log('Risk calculation complete:', { riskScore, hasHighRiskFactors, riskFactors });
+
+  return { riskScore, hasHighRiskFactors };
+};

@@ -40,9 +40,9 @@ export async function scanFile(file: File): Promise<ScanResult> {
     const hidsFindings = await performHIDSAnalysis(file.name);
     
     const { riskScore, hasHighRiskFactors } = calculateRiskScore(
-      data.metadata,
-      snortAlerts,
-      hidsFindings
+      data.metadata || {},
+      snortAlerts || [],
+      hidsFindings || []
     );
 
     // Save scan result to the current_scan_results table
@@ -79,8 +79,8 @@ export async function scanFile(file: File): Promise<ScanResult> {
     if (platform === 'android' || platform === 'ios') {
       console.log('Starting ML analysis for file type:', file.type);
       mlResults = await analyzeMobileApp(file.type, {
-        app_permissions: data.app_permissions,
-        app_components: data.app_components
+        app_permissions: data.app_permissions || [],
+        app_components: data.app_components || {}
       });
       console.log('ML analysis results:', mlResults);
 
@@ -109,7 +109,7 @@ export async function scanFile(file: File): Promise<ScanResult> {
       }
     }
 
-    // Format the scan results to match URL scan format
+    // Format the scan results
     const status = riskScore >= 70 ? 'malicious' : 
                    riskScore >= 40 ? 'suspicious' : 
                    'clean';
@@ -121,7 +121,6 @@ export async function scanFile(file: File): Promise<ScanResult> {
       undetected: 0
     };
 
-    // Return the scan result in the format matching URL scans
     return {
       id: crypto.randomUUID(),
       type: 'file',
